@@ -1,0 +1,5 @@
+.admin-shell {
+  min-height: 100vh;
+  background: var(--main-bg);
+  padding-top: 1px; 
+}

@@ -1,4 +1,7 @@
 /* Shared auth page styles for Login/Register */
+/* 
+commented out and moved to app.css as general colors
+
 :root {
 	--auth-bg: #f4f1ec;
 	--auth-card: #ffffff;
@@ -9,27 +12,28 @@
 	--auth-border: #d9d3ca;
 	--auth-shadow: 0 24px 60px rgba(29, 36, 41, 0.18);
 }
+*/
 
 .auth-shell {
 	min-height: 100vh;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--auth-bg);
+	background: var(--main-bg);
 	padding: 24px;
 }
 
 .auth-page,
 .login-container {
 	font-family: "Space Grotesk", "Segoe UI", Tahoma, sans-serif;
-	color: var(--auth-ink);
+	color: var(--main-ink);
 	max-width: 460px;
 	margin: 6vh auto;
 	padding: 32px 28px;
-	background: var(--auth-card);
-	border: 1px solid var(--auth-border);
+	background: var(--main-card);
+	border: 1px solid var(--main-border);
 	border-radius: 18px;
-	box-shadow: var(--auth-shadow);
+	box-shadow: var(--main-shadow);
 	position: relative;
 	overflow: hidden;
 	animation: auth-rise 500ms ease-out;
@@ -65,7 +69,7 @@
 .login-container p,
 .auth-page p {
 	margin: 0 0 22px;
-	color: var(--auth-muted);
+	color: var(--main-muted);
 }
 
 .form-group {
@@ -78,7 +82,7 @@
 
 .form-group label {
 	font-size: 0.9rem;
-	color: var(--auth-muted);
+	color: var(--main-muted);
 }
 
 .form-group input,
@@ -86,9 +90,9 @@
 	width: 90%;
 	padding: 12px 14px;
 	border-radius: 12px;
-	border: 1px solid var(--auth-border);
+	border: 1px solid var(--main-border);
 	background: #fcfbf8;
-	color: var(--auth-ink);
+	color: var(--main-ink);
 	font-size: 1rem;
 	transition: border-color 150ms ease, box-shadow 150ms ease;
 }
@@ -96,7 +100,7 @@
 .form-group input:focus,
 .form-group select:focus {
 	outline: none;
-	border-color: var(--auth-accent);
+	border-color: var(--main-accent);
 	box-shadow: 0 0 0 3px rgba(31, 122, 122, 0.15);
 }
 
@@ -111,7 +115,7 @@ button[type="submit"] {
 	padding: 12px 16px;
 	border: none;
 	border-radius: 12px;
-	background: linear-gradient(135deg, var(--auth-accent), #2e9a9a);
+	background: linear-gradient(135deg, var(--main-accent), #2e9a9a);
 	color: #fff;
 	font-size: 1rem;
 	font-weight: 600;
@@ -129,7 +133,7 @@ button[type="submit"]:hover {
 .register-link {
 	display: inline-block;
 	margin-top: 14px;
-	color: var(--auth-accent-2);
+	color: var(--main-accent-2);
 	text-decoration: none;
 	font-weight: 600;
 }
