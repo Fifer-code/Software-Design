@@ -1,5 +1,6 @@
 .admin-header {
     background-color: var(--main-accent);
+    color: var(--main-ink);
     padding: 0px;
     margin: 0px;
     height: 70px;
@@ -52,22 +53,14 @@
 }
 
 .header-right{
-    flex: 1;
+    flex: 3;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 5px;
 }
 
-.action-1{
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    cursor: pointer;
-}
-
-.action-2{
+.action-1, .action-2, .action-3{
     flex: 1;
     justify-content: center;
     align-items: center;

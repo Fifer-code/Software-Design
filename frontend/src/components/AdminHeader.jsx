@@ -9,7 +9,7 @@ export default function AdminHeader(){
                     <img className = "burger-sidebar-icon" src = {burgerSidebarIcon} />
                 </button>
                 <div className = "header-left-name">
-                    Admin
+                    <a>Admin Dashboard</a>
                 </div>
             </div>
             <div className = "header-center">
@@ -20,7 +20,10 @@ export default function AdminHeader(){
                     <a>Log-in Page</a>
                 </div>
                 <div className = "action-2">
-                    <a>View as User</a>
+                    <a>Service Management Screen</a>
+                </div>
+                <div className = "action-3">
+                    <a>Queue Management Screen</a>
                 </div>
             </div>
         </div>

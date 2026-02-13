@@ -1,25 +1,36 @@
 .admin-shell {
-  min-height: 100vh;
-  background: var(--main-bg);
-  padding: 1px; 
-  display: flex;
+    min-height: 100vh;
+    background: var(--main-bg);
+    padding: 1px; 
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
-.admin-card-1{
-    background-color: rgb(68, 158, 68);
-}
-
-.admin-card-2{
-    background-color: rgb(202, 113, 113);
-}
-
-.admin-card-3{
-    background-color:rgb(121, 121, 220);
+a{
+    cursor: pointer;
 }
 
 .admin-card-1, .admin-card-2, .admin-card-3{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     flex: 1;
-    justify-content: center;
-    align-content: center;
-    text-align: center;
+    min-height: 500px;
+    min-width: 200px;
+    animation: auth-rise 500ms ease-out;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 32px 28px;
+}
+
+.admin-card-1 h1, .admin-card-2 h1, .admin-card-3 h1{
+    color: var(--main-ink);
+    margin: 0 0 6px;
+	font-size: 2.1rem;
+	letter-spacing: -0.03em;
 }
