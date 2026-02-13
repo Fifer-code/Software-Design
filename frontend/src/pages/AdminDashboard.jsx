@@ -6,8 +6,15 @@ function AdminDashboard() {
     <>
     <AdminHeader />
     <div className = "admin-shell">
-        <h2>Admin Dashboard (WIP)</h2>
-        <p>test</p>
+        <div className = "admin-card-1">
+            List of services
+        </div>
+        <div className = "admin-card-2">
+            Current queue lengths
+        </div>
+        <div className = "admin-card-3">
+        Quick actions (open/close queue)
+        </div>
     </div>
     </>
   );

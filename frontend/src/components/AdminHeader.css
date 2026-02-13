@@ -1,8 +1,8 @@
 .admin-header {
-    background-color: var(--main-bg);
+    background-color: var(--main-accent);
     padding: 0px;
     margin: 0px;
-    height: 50px;
+    height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -10,24 +10,67 @@
 
 .header-left{
     flex: 1;
-    background-color: red;
     display: flex;
     justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.header-left-name{
+    flex: 2;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding-left: 20px;
+    font-size: 20px;
+}
+
+.burger-sidebar-button{
+    border: none;
+    padding: 0px 10px;
+    margin: 0px;
+    background: none;
+    display: flex;
+    align-items: center;
+}
+
+.burger-sidebar-icon{
+    height: 42px;
+    width: 42px;
+    cursor: pointer;
     align-items: center;
 }
 
 .header-center{
-    flex: 3;
-    background-color: blue;
+    flex: 7;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 5px;
+    font-size: 30px;
+    font-weight: bold;
 }
 
 .header-right{
     flex: 1;
-    background-color: yellow;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 5px;
+}
+
+.action-1{
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+}
+
+.action-2{
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
 }

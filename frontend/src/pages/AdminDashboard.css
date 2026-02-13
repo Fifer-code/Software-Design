@@ -1,5 +1,25 @@
 .admin-shell {
   min-height: 100vh;
   background: var(--main-bg);
-  padding-top: 1px; 
+  padding: 1px; 
+  display: flex;
+}
+
+.admin-card-1{
+    background-color: rgb(68, 158, 68);
+}
+
+.admin-card-2{
+    background-color: rgb(202, 113, 113);
+}
+
+.admin-card-3{
+    background-color:rgb(121, 121, 220);
+}
+
+.admin-card-1, .admin-card-2, .admin-card-3{
+    flex: 1;
+    justify-content: center;
+    align-content: center;
+    text-align: center;
 }
