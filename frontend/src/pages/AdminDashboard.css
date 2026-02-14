@@ -1,12 +1,13 @@
 .admin-shell {
-    min-height: 100vh;
+    min-height: calc(100vh - 70px);
     background: var(--main-bg);
     padding: 1px; 
     display: flex;
     gap: 24px;
     padding: 24px;
-    align-items: flex-start;
+    align-items: stretch;
     flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 a{
@@ -28,9 +29,18 @@ a{
     padding: 32px 28px;
 }
 
+.admin-card-2{
+    flex: 2;
+}
+
 .admin-card-1 h1, .admin-card-2 h1, .admin-card-3 h1{
     color: var(--main-ink);
     margin: 0 0 6px;
 	font-size: 2.1rem;
 	letter-spacing: -0.03em;
+}
+
+.admin-card-1 p, .admin-card-2 p, .admin-card-3 p {
+	margin: 0 0 22px;
+	color: var(--main-muted);
 }

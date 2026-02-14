@@ -8,9 +8,9 @@ function AdminDashboard() {
     <div className = "admin-shell">
         <div className = "admin-card-1">
             <h1>List of Services</h1>
-            <a>service 1</a><br></br><br></br>
-            <a>service 2</a><br></br><br></br>
-            <a>service 3</a><br></br>
+            <p><a>service 1</a></p>
+            <p><a>service 2</a></p>
+            <p><a>service 3</a></p>
         </div>
         <div className = "admin-card-2">
             <h1>Current queue lengths</h1>
