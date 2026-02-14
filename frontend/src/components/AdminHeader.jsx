@@ -1,13 +1,9 @@
 import "./AdminHeader.css";
-import burgerSidebarIcon from "../assets/burger-sidebar.svg";
 
 export default function AdminHeader(){
     return(
         <div className = "admin-header">
             <div className = "header-left">
-                <button className = "burger-sidebar-button">
-                    <img className = "burger-sidebar-icon" src = {burgerSidebarIcon} />
-                </button>
                 <div className = "header-left-name">
                     <a>Admin Dashboard</a>
                 </div>
