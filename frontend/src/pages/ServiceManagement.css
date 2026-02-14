@@ -8,3 +8,18 @@
 	font-size: 1rem;
 	transition: border-color 150ms ease, box-shadow 150ms ease;
 }
+
+.admin-queue-management{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 50px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 32px 28px;
+    margin: 10px;
+}

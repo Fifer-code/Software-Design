@@ -2,9 +2,6 @@ import "./ServiceManagement.css"
 import AdminHeader from "../components/AdminHeader"
 
 function ServiceManagement(){
-
-
-
     return(
         <>
         <AdminHeader />
