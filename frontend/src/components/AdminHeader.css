@@ -6,34 +6,27 @@
     height: 70px;
     display: flex;
     justify-content: center;
-    align-items: center;
     font-weight: bold;
     font-size: 20px;
 }
 
 .admin-header a:hover{
-    color: var(--main-accent-2);
+    background-color: #195f5f;
+    color: #000000;
     transition: 200ms ease;
-    text-shadow: 2px 2px 3px rgb(134, 134, 134);
 }
 
 .header-left{
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 5px;
-    text-decoration: underline;
-    text-underline-offset: 6px;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--main-accent-2);
+    padding: 0 5px;
 }
 
 .header-left-name{
     flex: 2;
     display: flex;
     justify-content: left;
-    align-items: center;
     padding-left: 20px;
 }
 
@@ -58,7 +51,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 5px;
+    padding: 0 5px;
     font-size: clamp(24px, 3vw, 40px);
     font-weight: bold;
 }
@@ -67,18 +60,20 @@
     flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 5px;
+    padding: 0 5px;
     gap: 20px;
-    text-decoration: underline;
-    text-underline-offset: 6px;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--main-accent-2);
 }
 
 .action-1, .action-2, .action-3{
     justify-content: center;
-    align-items: center;
     display: flex;
     cursor: pointer;
+}
+
+.admin-header a {
+    display: flex;
+    align-items: center;  
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
 }
