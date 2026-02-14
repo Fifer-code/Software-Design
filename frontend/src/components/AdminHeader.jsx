@@ -13,17 +13,17 @@ export default function AdminHeader(){
                 </div>
             </div>
             <div className = "header-center">
-                QueueSmart Admin Page
+                QueueSmart Admin
             </div>
             <div className = "header-right">
                 <div className = "action-1">
-                    <a>Log-in Page</a>
+                    <a>Queue Management</a>
                 </div>
                 <div className = "action-2">
-                    <a>Service Management Screen</a>
+                    <a>Service Management</a>
                 </div>
                 <div className = "action-3">
-                    <a>Queue Management Screen</a>
+                    <a>Log-in / Register</a>
                 </div>
             </div>
         </div>
