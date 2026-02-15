@@ -32,7 +32,7 @@ return (
     <div className="card">
       <h3 className="feedback-subtitle">Rate Your Experience</h3>
 
-      {/* Star Rating */}
+      {/* //Star Rating */}
       <div className="feedback-stars">
         {[1, 2, 3, 4, 5].map((star) => (
           <span
