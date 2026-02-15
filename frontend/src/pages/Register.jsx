@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./auth.css";
+import "./auth.css"
 
-function Login() {
+function Register() {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
 
-  // Validate email and password before submission
   const validate = () => {
     const newErrors = {};
+
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
 
     if (!email) {
       newErrors.email = "Email is required";
@@ -26,33 +30,46 @@ function Login() {
       newErrors.password = "Password must be at least 6 characters";
     }
 
+    if (!confirmPassword) {
+      newErrors.confirmPassword = "Confirm your password";
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
-    // Mock login
-    localStorage.setItem("role", role);
+    // Mock register
+    const existing = JSON.parse(localStorage.getItem("mockUsers") || "[]");
+    existing.push({ name, email, role: "user" });
+    localStorage.setItem("mockUsers", JSON.stringify(existing));
 
-    if (role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/user/dashboard");
-    }
+    navigate("/");
   };
 
   return (
     <div className="auth-shell">
       <div className="login-container">
         <h1>QueueSmart</h1>
-        <p>Smart Queue Management</p>
+        <p>Create your account</p>
 
         <form onSubmit={handleSubmit} noValidate>
+          <div className="form-group">
+            <label>Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            {errors.name && <span className="error">{errors.name}</span>}
+          </div>
+
           <div className="form-group">
             <label>Email</label>
             <input
@@ -73,25 +90,27 @@ function Login() {
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
 
-          {/* Role selector for testing. Could be removed in the future and done in backend. */}
           <div className="form-group">
-            <label>Login as</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="user">User</option>
-              <option value="admin">Administrator</option>
-            </select>
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            {errors.confirmPassword && (
+              <span className="error">{errors.confirmPassword}</span>
+            )}
           </div>
 
-          <button type="submit">Login</button>
+          <button type="submit">Create Account</button>
 
-          <Link to="/register" className="register-link">
-            Don't have an account? Register here.
+          <Link to="/" className="register-link">
+            Already have an account? Log in.
           </Link>
-
         </form>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Register;
