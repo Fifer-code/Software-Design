@@ -18,7 +18,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* USER LAYOUT ROUTE */}
+        {/* user routes */}
         <Route path="/user" element={<UserSidebar />}>
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="join" element={<JoinQueue />} />

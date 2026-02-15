@@ -1,12 +1,13 @@
 .page-container {
   padding: 30px;
-  background-color: var(--bg-dark);
+  background-color: var(--main-bg);
   min-height: 100vh;
 }
 
 .page-title {
   font-size: 28px;
   margin-bottom: 25px;
+  color: var(--main-ink);
 }
 
 .card-grid {
@@ -16,10 +17,12 @@
 }
 
 .card {
-  background-color: var(--button-dark);
+  background-color: var(--main-card);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--main-shadow);
+  border: 1px solid var(--main-border);
+  color: var(--main-ink);
   transition: transform 0.2s ease;
 }
 
@@ -29,6 +32,7 @@
 
 .card h3 {
   margin-bottom: 10px;
+  color: var(--main-ink);
 }
 
 .primary-btn {
@@ -36,23 +40,40 @@
   padding: 10px 16px;
   border-radius: 8px;
   border: none;
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--main-accent);
+  color: var(--main-card);
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s ease;
 }
 
 .primary-btn:hover {
-  background-color: var(--primary-hover);
+  background-color: var(--main-accent-2);
 }
 
 .secondary-btn {
   margin-top: 15px;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--main-accent);
   background: transparent;
-  color: var(--primary);
+  color: var(--main-accent);
   cursor: pointer;
+}
+
+.feedback-stars {
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+.feedback-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--main-border);
+  margin-bottom: 15px;
+  background-color: var(--main-card);
+  color: var(--main-ink);
+  font-size: 14px;
 }

@@ -1,10 +1,10 @@
 :root {
-  --main-bg: #f4f1ec;       /* page background */
-  --main-card: #ffffff;     /* card background */
-  --main-ink: #1d2429;      /* primary text color (dark) */
-  --main-muted: #5f6b72;    /* secondary text color */
-  --main-accent: #1f7a7a;   /* primary accent (teal-ish) */
-  --main-accent-2: #e07a5f; /* secondary accent (salmon) */
+  --main-bg: #f4f1ec;
+  --main-card: #ffffff;
+  --main-ink: #1d2429;
+  --main-muted: #5f6b72;
+  --main-accent: #1f7a7a;
+  --main-accent-2: #e07a5f;
   --main-border: #d9d3ca;
   --main-shadow: 0 24px 60px rgba(29,36,41,0.18);
 
