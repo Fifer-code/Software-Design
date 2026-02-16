@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./auth.css"
+import "./auth.css";
+
+const NAME_MAX = 50;
+const EMAIL_MAX = 100;
+const PASSWORD_MAX = 128;
 
 function Register() {
   const navigate = useNavigate();
@@ -16,10 +20,16 @@ function Register() {
 
     if (!name.trim()) {
       newErrors.name = "Name is required";
+    } else if (name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    } else if (name.length > NAME_MAX) {
+      newErrors.name = `Name cannot exceed ${NAME_MAX} characters`;
     }
 
     if (!email) {
       newErrors.email = "Email is required";
+    } else if (email.length > EMAIL_MAX) {
+      newErrors.email = `Email cannot exceed ${EMAIL_MAX} characters`;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "Enter a valid email address";
     }
@@ -28,6 +38,8 @@ function Register() {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    } else if (password.length > PASSWORD_MAX) {
+      newErrors.password = `Password cannot exceed ${PASSWORD_MAX} characters`;
     }
 
     if (!confirmPassword) {
@@ -61,40 +73,61 @@ function Register() {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label>Name</label>
+            <label htmlFor="reg-name">Name</label>
             <input
+              id="reg-name"
               type="text"
+              maxLength={NAME_MAX}
+              required
+              placeholder="Your full name"
               value={name}
+              className={errors.name ? "input-error" : ""}
               onChange={(e) => setName(e.target.value)}
             />
             {errors.name && <span className="error">{errors.name}</span>}
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="reg-email">Email</label>
             <input
+              id="reg-email"
               type="email"
+              maxLength={EMAIL_MAX}
+              required
+              placeholder="you@example.com"
               value={email}
+              className={errors.email ? "input-error" : ""}
               onChange={(e) => setEmail(e.target.value)}
             />
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="reg-password">Password</label>
             <input
+              id="reg-password"
               type="password"
+              maxLength={PASSWORD_MAX}
+              required
+              minLength={6}
+              placeholder="Min. 6 characters"
               value={password}
+              className={errors.password ? "input-error" : ""}
               onChange={(e) => setPassword(e.target.value)}
             />
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
 
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label htmlFor="reg-confirm">Confirm Password</label>
             <input
+              id="reg-confirm"
               type="password"
+              maxLength={PASSWORD_MAX}
+              required
+              placeholder="Re-enter your password"
               value={confirmPassword}
+              className={errors.confirmPassword ? "input-error" : ""}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
             {errors.confirmPassword && (

@@ -118,3 +118,188 @@
   color: var(--main-muted);
   cursor: pointer;
 }
+
+/* ── Toast Notifications ── */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--main-card);
+  border: 1px solid var(--main-border);
+  box-shadow: 0 8px 30px rgba(29, 36, 41, 0.15);
+  color: var(--main-ink);
+  font-size: 14px;
+  animation: toast-slide 300ms ease-out;
+}
+
+.toast-success {
+  border-left: 4px solid var(--main-accent);
+}
+
+.toast-info {
+  border-left: 4px solid var(--main-accent);
+}
+
+.toast-warning {
+  border-left: 4px solid var(--main-accent-2);
+}
+
+.toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: var(--main-accent);
+}
+
+.toast-warning .toast-icon {
+  color: var(--main-accent-2);
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--main-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.toast-close:hover {
+  color: var(--main-ink);
+}
+
+@keyframes toast-slide {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Notification List (Dashboard Card) ── */
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--main-bg);
+  font-size: 14px;
+  color: var(--main-ink);
+}
+
+.notification-item .notif-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--main-accent);
+}
+
+.notification-item .notif-time {
+  display: block;
+  font-size: 12px;
+  color: var(--main-muted);
+  margin-top: 2px;
+}
+
+/* ── Form Validation Styles ── */
+
+.form-error {
+  font-size: 0.82rem;
+  color: #b94a3a;
+  margin-top: 2px;
+}
+
+.input-error {
+  border-color: #b94a3a !important;
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--main-muted);
+  margin-top: 2px;
+}
+
+.form-group-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.form-group-dashboard label {
+  font-size: 0.9rem;
+  color: var(--main-muted);
+  font-weight: 500;
+}
+
+.form-group-dashboard input,
+.form-group-dashboard select,
+.form-group-dashboard textarea {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--main-border);
+  background: var(--main-bg);
+  color: var(--main-ink);
+  font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.form-group-dashboard input:focus,
+.form-group-dashboard select:focus,
+.form-group-dashboard textarea:focus {
+  outline: none;
+  border-color: var(--main-accent);
+  box-shadow: 0 0 0 3px rgba(31, 122, 122, 0.12);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--main-muted);
+  text-align: right;
+}
+
+.char-count.over-limit {
+  color: #b94a3a;
+  font-weight: 500;
+}
+
+.thankyou-title {
+  font-size: 24px;
+  color: var(--main-accent);
+  margin-bottom: 8px;
+}
+
+.thankyou-text {
+  color: var(--main-muted);
+}
