@@ -3,7 +3,7 @@
 	padding: 12px 14px;
 	border-radius: 12px;
 	border: 1px solid var(--main-border);
-	background: #fcfbf8;
+	background: var(--main-card);
 	color: var(--main-ink);
 	font-size: 1rem;
 	transition: border-color 150ms ease, box-shadow 150ms ease;
