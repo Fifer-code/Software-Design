@@ -6,42 +6,78 @@ function ServiceManagement(){
         <div className = "admin-layout">
         <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
-            <div className = "admin-card-1">
-                <h1>Create Service</h1>
-                <p>Create Brand New Custom Services</p>
-                <form>
-                    <div className = "form-group">
-                        <label>Service Name:</label>
-                        <input></input>
-                    </div>
-                    <div className = "form-group">
-                        <label>Description:</label>
-                        <textarea rows = "5" ></textarea>
-                    </div>
-                    <div className = "form-group">
-                        <label>Expected Duration:</label>
-                        <input></input>
-                    </div>
-                    <div className = "form-group">
-                        <label>Priority: </label>
-                        <input></input>
-                    </div>
-                    <button type = "submit">Create New Service</button>
-                </form>
-            </div>
-            <div className = "admin-card-2 service-page">
-                <h1>Edit Service</h1>
-                <div>
-                    <p>Service 1</p>
+            <h2>Service Managemenet</h2>
+            <div className = "admin-card-container">
+                <div className = "admin-card-1">
+                    <h1>Create Service</h1>
+                    <p>Create Brand New Custom Services</p>
+                    <form className = "admin-create-form">
+                        <div className = "form-group">
+                            <label>Service Name:</label>
+                            <input type="text" required maxLength="100" />
+                        </div>
+                        <div className = "form-group">
+                            <label>Description:</label>
+                            <textarea rows = "5" ></textarea>
+                        </div>
+                        <div className = "form-group">
+                            <label>Expected Duration:</label>
+                            <input type = "number"  required min = "1"/>
+                        </div>
+                        <div className = "form-group">
+                            <label>Priority: </label>
+                            <input></input>
+                        </div>
+                        <button type = "submit">Create New Service</button>
+                    </form>
                 </div>
-                <div>
-                    <p>Service 2</p>
-                </div>
-                <div>
-                    <p>Service 3</p>
-                </div>
-                <div>
-                    <p>Service 4</p>
+                <div className = "admin-card-2">
+                    <h1>Edit Service</h1>
+
+                    <div className="admin-subcard">
+                        <p>DMV Queue 1</p>
+                        
+                        <form className="admin-edit-form">
+                            <div className = "edit-left">
+                                <div className = "form-group">
+                                    <label>Service Name: </label>
+                                    <input type = "text" required maxLength="100" />
+                                </div>
+                                <div className = "form-group">
+                                    <label>Expected Duration: </label>
+                                    <input type = "number"  required min = "1"/>
+                                </div>
+                            </div>
+
+                            <div className="edit-middle">
+                                <div className = "form-group">
+                                    <label>Description:</label>
+                                    <textarea rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <div className="edit-right">
+                                <select className = "form-group">
+                                    <option value = "high">High</option>
+                                    <option value = "medium">Medium</option>
+                                    <option value = "low">Low</option>
+                                </select>
+                                <button type="submit" className="save-btn">Save</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div className = "admin-subcard">
+                        <p>Banking Queue 1</p>
+                    </div>
+
+                    <div className = "admin-subcard">
+                        <p>Student Advising Queue 1</p>
+                    </div>
+
+                    <div className = "admin-subcard">
+                        <p>placeholder</p>
+                    </div>
                 </div>
             </div>
         </div>

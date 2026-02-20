@@ -20,6 +20,42 @@
     min-height: 50px;
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
-    padding: 32px 28px;
+    padding: 8px 10px;
     margin: 10px;
+}
+
+/* Creates the 3-column grid from your sketch */
+.admin-edit-form {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr; /* Middle column gets more space for the description */
+    gap: 12px;
+}
+
+.edit-left, .edit-right {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Update your existing middle column textarea CSS */
+.edit-middle textarea {
+    width: 100%; /* SURGICAL FIX: Forces textarea to fill the entire blue grid column */
+    height: 100%;
+    box-sizing: border-box; /* SURGICAL FIX: Ensures padding doesn't make it spill out */
+    resize: none; 
+}
+
+/* Let's also add this so the inputs and dropdown stretch to match nicely */
+.edit-left input, .edit-right select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.save-btn {
+    background-color: var(--main-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: auto; /* Pushes the button to the bottom row */
 }

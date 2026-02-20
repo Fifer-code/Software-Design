@@ -9,13 +9,23 @@
     height: 100%;
     background: var(--main-bg);
     padding: 1px; 
-    display: flex;
-    gap: 24px;
     padding: 24px;
-    align-items: stretch;
-    flex-wrap: nowrap;
     box-sizing: border-box;
     overflow: hidden;
+    flex-direction: column;
+}
+
+.admin-card-container{
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    height: calc(100% - 40px);
+}
+
+h2{
+    margin: 0px;
+    margin-bottom: 10px;
 }
 
 a{
@@ -36,6 +46,7 @@ a{
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 32px 28px;
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .admin-card-2{
@@ -63,14 +74,14 @@ a{
     flex-direction: column;
     justify-content: flex-start;
     flex: 1;
-    min-height: 50px;
+    min-height: 10%;
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
     margin: 10px;
 }
 
-.admin-subcard-2{
+.admin-subcard-tall{
     background: var(--main-card);
     border: 1px solid var(--main-border);
     border-radius: 18px;
@@ -78,14 +89,14 @@ a{
     flex-direction: column;
     justify-content: flex-start;
     flex: 1;
-    min-height: 200px;
+    min-height: 150px;
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
     margin: 10px;
 }
 
-.admin-subcard-3{
+.admin-subcard-short{
     background: var(--main-card);
     border: 1px solid var(--main-border);
     border-radius: 18px;

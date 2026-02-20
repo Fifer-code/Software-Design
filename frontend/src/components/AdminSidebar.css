@@ -8,7 +8,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: var(--main-accent);
+    background-color: var(--main-muted);
 }
 
 .sidebar-user {
