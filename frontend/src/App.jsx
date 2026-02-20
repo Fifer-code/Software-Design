@@ -1,7 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AdminDashboard from "./pages/AdminDashboard";
+import UserDashboard from "./pages/UserDashboard";
+
+/* admin routes */
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ServiceManagement from "./pages/admin/ServiceManagement";
+import QueueManagement from "./pages/admin/QueueManagement";
 
 /*user routes*/
 import UserSidebar from "./components/UserSidebar";
@@ -28,6 +33,8 @@ function App() {
         </Route>
 
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path = "/admin/servicemanagement" element = {<ServiceManagement />}/>
+        <Route path = "/admin/queuemanagement" element = {<QueueManagement />}/>
       </Routes>
     </BrowserRouter>
   );

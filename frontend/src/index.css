@@ -1,3 +1,24 @@
+/* same colors from auth just renamed */
+:root {
+	--main-bg: #f4f1ec;
+	--main-card: #ffffff;
+	--main-ink: #1d2429;
+	--main-muted: #5f6b72;
+	--main-accent: #1f7a7a;
+	--main-accent-2: #e07a5f;
+	--main-border: #d9d3ca;
+	--main-shadow: 0 24px 60px rgba(29, 36, 41, 0.18);
+}
+
+body {
+    font-family: "Space Grotesk", "Segoe UI", Tahoma, sans-serif;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+
+/* commented out all initial setup css
+
 :root {
   --main-bg: #0d1117;
   --main-card: #161b22;

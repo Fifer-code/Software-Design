@@ -1,0 +1,64 @@
+.form-group textarea{
+    width: 90%;
+	padding: 12px 14px;
+	border-radius: 12px;
+	border: 1px solid var(--main-border);
+	background: #fcfbf8;
+	color: var(--main-ink);
+	font-size: 1rem;
+	transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.admin-subcard{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: none;
+    min-height: 50px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 8px 10px;
+    margin: 10px;
+}
+
+.admin-edit-form {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 12px;
+}
+
+.edit-left, .edit-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-middle textarea {
+    width: 100%; 
+    flex-grow: 1; 
+    box-sizing: border-box; 
+    resize: none; 
+}
+
+.edit-left input, .edit-right select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.save-btn {
+    background-color: var(--main-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: auto;
+}
+
+.edit-middle .form-group {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
