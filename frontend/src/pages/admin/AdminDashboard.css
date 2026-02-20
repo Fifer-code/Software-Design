@@ -86,15 +86,16 @@ a{
     font-weight: bold;
 }
 
-.admin-card-2 .admin-subcard h3{
+.admin-card-2 .admin-subcard h3, .admin-card-1 .admin-subcard h3{
     color: var(--main-accent-2);
     margin: 0px 0px 10px 0px;
 }
 
-.admin-card-2 .admin-subcard p {
+.admin-card-2 .admin-subcard p, .admin-card-1 .admin-subcard p {
     color: var(--main-ink);
     font-weight: normal; 
 }
+
 
 .admin-subcard-tall{
     background: var(--main-card);

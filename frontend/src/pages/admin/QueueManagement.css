@@ -1,0 +1,54 @@
+.queue-grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: start;
+    width: 100%;
+}
+.queue-grid-container .admin-subcard {
+    margin: 0; 
+}
+
+.queue-description{
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.queue-list-container{
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+}
+
+.queue-user{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--main-border);
+    border-top: 1px solid var(--main-border);
+    padding: 5px;
+}
+
+.queue-user-actions{
+    display: flex;
+    gap: 8px;
+}
+
+.queue-move-buttons{
+    width: 100%;
+	border: none;
+	border-radius: 12px;
+	background: linear-gradient(135deg, var(--main-accent), #2e9a9a);
+	color: #fff;
+	font-weight: 300;
+	cursor: pointer;
+	transition: transform 150ms ease, box-shadow 150ms ease;
+	position: relative;
+	z-index: 1;
+}
+
+.queue-move-buttons:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 10px 24px rgba(31, 122, 122, 0.25);
+}
