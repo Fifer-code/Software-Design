@@ -81,11 +81,10 @@ a{
     margin: 10px;
 }
 
-.admin-subcard p{
+.admin-subcard p, .admin-subcard-tall p, .admin-subcard-short p{
     color: var(--main-accent-2);
     font-weight: bold;
 }
-
 
 .admin-subcard-tall{
     background: var(--main-card);
@@ -100,6 +99,10 @@ a{
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
     margin: 10px;
+}
+
+.admin-subcard-tall p {
+    margin-bottom: 5px;
 }
 
 .admin-subcard-short{

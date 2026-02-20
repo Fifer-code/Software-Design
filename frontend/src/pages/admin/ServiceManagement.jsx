@@ -20,15 +20,20 @@ function ServiceManagement(){
                         </div>
                         <div className = "form-group">
                             <label>Description:</label>
-                            <textarea rows = "5" ></textarea>
+                            <textarea rows = "5" required></textarea>
                         </div>
                         <div className = "form-group">
                             <label>Expected Duration:</label>
                             <input type = "number"  required min = "1"/>
                         </div>
-                        <div className = "form-group">
+                        <div className = "form-group" >
                             <label>Priority: </label>
-                            <input></input>
+                            <select defaultValue="" required>
+                                <option value="" disabled hidden></option>
+                                <option value = "high">High</option>
+                                <option value = "medium">Medium</option>
+                                <option value = "low">Low</option>
+                            </select>
                         </div>
                         <button type = "submit">Create New Service</button>
                     </form>
@@ -62,7 +67,8 @@ function ServiceManagement(){
                             <div className="edit-right">
                                 <div className = "form-group" >
                                     <label>Priority: </label>
-                                    <select>
+                                    <select defaultValue="" required>
+                                        <option value="" disabled hidden></option>
                                         <option value = "high">High</option>
                                         <option value = "medium">Medium</option>
                                         <option value = "low">Low</option>
@@ -99,7 +105,8 @@ function ServiceManagement(){
                             <div className="edit-right">
                                 <div className = "form-group" >
                                 <label>Priority: </label>
-                                    <select>
+                                    <select defaultValue="" required>
+                                        <option value="" disabled hidden></option>
                                         <option value = "high">High</option>
                                         <option value = "medium">Medium</option>
                                         <option value = "low">Low</option>
@@ -135,7 +142,8 @@ function ServiceManagement(){
                             <div className="edit-right">
                                 <div className = "form-group" >
                                     <label>Priority: </label>
-                                    <select>
+                                    <select defaultValue="" required>
+                                    <option value="" disabled hidden></option>
                                         <option value = "high">High</option>
                                         <option value = "medium">Medium</option>
                                         <option value = "low">Low</option>
@@ -171,7 +179,8 @@ function ServiceManagement(){
                             <div className="edit-right">
                                 <div className = "form-group" >
                                     <label>Priority: </label>
-                                    <select>
+                                    <select defaultValue="" required>
+                                    <option value="" disabled hidden></option>
                                         <option value = "high">High</option>
                                         <option value = "medium">Medium</option>
                                         <option value = "low">Low</option>

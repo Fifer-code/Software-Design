@@ -45,39 +45,43 @@ function AdminDashboard() {
                 <h1>Quick actions</h1>
                 <div className = "admin-subcard form-group">
                     <p>Select Queue to Pause</p>
-                    <select>
-                        <option></option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
+                    <select defaultValue="" required>
+                        <option value="" disabled hidden></option>
+                        <option value = "DMV 1">DMV Queue 1</option>
+                        <option value = "Banking 1">Banking Queue 1</option>
+                        <option value = "Advising 1">Student Advising Queue 1</option>
+                        <option value = "placeholder">placeholder</option>
                     </select>
                 </div>
                 <div className = "admin-subcard form-group">
                     <p>Select Queue to Close</p>
-                    <select>
-                        <option></option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
+                    <select defaultValue="" required>
+                        <option value="" disabled hidden></option>
+                        <option value = "DMV 1">DMV Queue 1</option>
+                        <option value = "Banking 1">Banking Queue 1</option>
+                        <option value = "Advising 1">Student Advising Queue 1</option>
+                        <option value = "placeholder">placeholder</option>
                     </select>
                 </div>
                 <div className = "admin-subcard form-group">
                     <p>Select Queue to Open</p>
-                    <select>
-                        <option></option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
+                    <select defaultValue="" required>
+                        <option value="" disabled hidden></option>
+                        <option value = "DMV 1">DMV Queue 1</option>
+                        <option value = "Banking 1">Banking Queue 1</option>
+                        <option value = "Advising 1">Student Advising Queue 1</option>
+                        <option value = "placeholder">placeholder</option>
                     </select>
                 </div>
-                <div className = "admin-subcard-tall">
+                <div className = "admin-subcard-tall form-group">
                     <p>Send Notification</p>
                     <textarea rows = "7"></textarea>
-                    <select>
-                        <option></option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
+                    <select defaultValue="" required>
+                        <option value="" disabled hidden></option>
+                        <option value = "DMV 1">DMV Queue 1</option>
+                        <option value = "Banking 1">Banking Queue 1</option>
+                        <option value = "Advising 1">Student Advising Queue 1</option>
+                        <option value = "placeholder">placeholder</option>
                     </select>
                 </div>
                 <div className = "admin-subcard-short">
