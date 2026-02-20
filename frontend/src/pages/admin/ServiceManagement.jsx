@@ -6,7 +6,7 @@ function ServiceManagement(){
         <div className = "admin-layout">
         <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
-            <h2>Service Managemenet</h2>
+            <h2>Service Management</h2>
 
             <div className = "admin-card-container">
 

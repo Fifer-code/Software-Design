@@ -10,7 +10,7 @@ function QueueManagement(){
             <h2>Queue Management</h2>
             <div className = "admin-card-container">
                 <div className = "admin-card-1">
-                    <h1>Avaialabe Queues & Information</h1>
+                    <h1>Availabe Queues & Information</h1>
 
                     <div className = "queue-grid-container">
                         <div className = "admin-subcard">
