@@ -1,11 +1,11 @@
 import "./QueueManagement.css"
-import AdminHeader from "../components/AdminHeader"
+import AdminSidebar from "../../components/AdminSidebar";
 
 function QueueManagement(){
 
     return(
-        <>
-        <AdminHeader />
+        <div className = "admin-layout">
+        <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
             <div className = "admin-card-1">
                 <h1>Avaialabe Queues</h1>
@@ -30,7 +30,7 @@ function QueueManagement(){
                 </div>
             </div>
         </div>
-        </>
+        </div>
     );
 }
 

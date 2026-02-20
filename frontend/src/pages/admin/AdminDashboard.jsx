@@ -1,10 +1,13 @@
+import AdminSidebar from "../../components/AdminSidebar";
 import "./AdminDashboard.css"
-import AdminHeader from "../components/AdminHeader.jsx"
+
 
 function AdminDashboard() {
   return (
-    <>
-    <AdminHeader />
+    <div className = "admin-layout">
+        <div>
+            <AdminSidebar></AdminSidebar>
+        </div>
     <div className = "admin-shell">
         <div className = "admin-card-1">
             <h1>List of Services</h1>
@@ -25,7 +28,7 @@ function AdminDashboard() {
             <p>action 3</p>
         </div>
     </div>
-    </>
+    </div>
   );
 }
 

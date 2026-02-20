@@ -1,10 +1,10 @@
 import "./ServiceManagement.css"
-import AdminHeader from "../components/AdminHeader"
+import AdminSidebar from "../../components/AdminSidebar";
 
 function ServiceManagement(){
     return(
-        <>
-        <AdminHeader />
+        <div className = "admin-layout">
+        <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
             <div className = "admin-card-1">
                 <h1>Create Service</h1>
@@ -45,7 +45,7 @@ function ServiceManagement(){
                 </div>
             </div>
         </div>
-        </>
+        </div>
     );
 }
 

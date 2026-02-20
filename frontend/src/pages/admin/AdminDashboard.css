@@ -1,13 +1,21 @@
+.admin-layout{
+    display: grid;
+    grid-template-columns: minmax(50px, 10%) 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
 .admin-shell {
-    min-height: calc(100vh - 70px);
+    height: 100%;
     background: var(--main-bg);
     padding: 1px; 
     display: flex;
     gap: 24px;
     padding: 24px;
     align-items: stretch;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 a{
@@ -22,11 +30,12 @@ a{
     flex-direction: column;
     justify-content: flex-start;
     flex: 1;
-    min-height: 500px;
+    min-height: 100%;
     min-width: 200px;
     animation: auth-rise 500ms ease-out;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 32px 28px;
+    box-sizing: border-box;
 }
 
 .admin-card-2{
@@ -38,6 +47,7 @@ a{
     margin: 0 0 6px;
 	font-size: 2.1rem;
 	letter-spacing: -0.03em;
+    overflow-wrap: break-word;
 }
 
 .admin-card-1 p, .admin-card-2 p, .admin-card-3 p {
