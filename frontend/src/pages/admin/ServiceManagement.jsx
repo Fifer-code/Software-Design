@@ -43,7 +43,7 @@ function ServiceManagement(){
                     <h1>Edit Service</h1>
 
                     <div className="admin-subcard">
-                        <p>DMV Queue 1</p>
+                        <h3>DMV Queue 1</h3>
                         
                         <form className="admin-edit-form">
                             <div className = "edit-left">
@@ -81,7 +81,7 @@ function ServiceManagement(){
                     </div>
 
                     <div className = "admin-subcard">
-                        <p>Banking Queue 1</p>
+                        <h3>Banking Queue 1</h3>
 
                         <form className="admin-edit-form">
                             <div className = "edit-left">
@@ -118,7 +118,7 @@ function ServiceManagement(){
                     </div>
 
                     <div className = "admin-subcard">
-                        <p>Student Advising Queue 1</p>
+                        <h3>Student Advising Queue 1</h3>
 
                         <form className="admin-edit-form">
                             <div className = "edit-left">
@@ -155,7 +155,7 @@ function ServiceManagement(){
                     </div>
 
                     <div className = "admin-subcard">
-                        <p>placeholder</p>
+                        <h3>placeholder</h3>
 
                         <form className="admin-edit-form">
                             <div className = "edit-left">

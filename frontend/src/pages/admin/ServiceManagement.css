@@ -24,10 +24,9 @@
     margin: 10px;
 }
 
-/* Creates the 3-column grid from your sketch */
 .admin-edit-form {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr; /* Middle column gets more space for the description */
+    grid-template-columns: 1fr 2fr 1fr;
     gap: 12px;
 }
 
@@ -36,7 +35,6 @@
     flex-direction: column;
 }
 
-/* Update your existing middle column textarea CSS */
 .edit-middle textarea {
     width: 100%; 
     flex-grow: 1; 
@@ -44,7 +42,6 @@
     resize: none; 
 }
 
-/* Let's also add this so the inputs and dropdown stretch to match nicely */
 .edit-left input, .edit-right select {
     width: 100%;
     box-sizing: border-box;
@@ -56,12 +53,12 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: auto; /* Pushes the button to the bottom row */
+    margin-top: auto;
 }
 
-/* SURGICAL FIX: Forces the form-group wrapper to take up the full height of the grid column */
 .edit-middle .form-group {
     height: 100%;
     display: flex;
     flex-direction: column;
 }
+

@@ -14,35 +14,43 @@ function AdminDashboard() {
             <div className = "admin-card-1">
                 <h1>List of Services</h1>
                 <div className = "admin-subcard">
-                    <p><a>DMV</a></p>
+                    <p>DMV</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>Banking</a></p>
+                    <p>Banking</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>Student Advising</a></p>
+                    <p>Student Advising</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>placeholder</a></p>
+                    <p>placeholder</p>
                 </div>
             </div>
             <div className = "admin-card-2">
-                <h1>Current queue lengths</h1>
+                <h1>Current Queues & Lengths</h1>
                 <div className = "admin-subcard">
-                    <p><a>DMV Queue 1</a></p>
+                    <h3>DMV Queue 1</h3>
+                    <p>People in Queue: 18</p>
+                    <p>Estimated Wait: 45 minutes</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>Banking Queue 1</a></p>
+                    <h3>Banking Queue 1</h3>
+                    <p>People in Queue: 7</p>
+                    <p>Estimated Wait: 25 minutes</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>Student Advising Queue 1</a></p>
+                    <h3>Student Advising Queue 1</h3>
+                    <p>People in Queue: 4</p>
+                    <p>Estimated Wait: 95 minutes</p>
                 </div>
                 <div className = "admin-subcard">
-                    <p><a>placeholder</a></p>
+                    <h3>placeholder</h3>
+                    <p>People in Queue: </p>
+                    <p>Estimated Wait: </p>
                 </div>
             </div>
             <div className = "admin-card-3">
-                <h1>Quick actions</h1>
+                <h1>Quick Actions</h1>
                 <div className = "admin-subcard form-group">
                     <p>Select Queue to Pause</p>
                     <select defaultValue="" required>
@@ -75,7 +83,6 @@ function AdminDashboard() {
                 </div>
                 <div className = "admin-subcard-tall form-group">
                     <p>Send Notification</p>
-                    <textarea rows = "7"></textarea>
                     <select defaultValue="" required>
                         <option value="" disabled hidden></option>
                         <option value = "DMV 1">DMV Queue 1</option>
@@ -83,6 +90,7 @@ function AdminDashboard() {
                         <option value = "Advising 1">Student Advising Queue 1</option>
                         <option value = "placeholder">placeholder</option>
                     </select>
+                    <textarea rows = "7"></textarea>
                 </div>
                 <div className = "admin-subcard-short">
                     <p>Clear All Queues</p>
