@@ -18,12 +18,12 @@ function QueueManagement(){
             </div>
             <div className = "admin-card-2">
                 <h1>Queue Information</h1>
-                <div className = "admin-queue-management">
+                <div className = "admin-subcard">
                     <h1>Reorder/Remove Users</h1>
                     <p>user 1</p>
                     <p>user 2</p>
                 </div>
-                <div className = "admin-queue-management">
+                <div className = "admin-subcard">
                     <h1>Serve Next User</h1>
                     <p>user 1</p>
                     <p>user 2</p>

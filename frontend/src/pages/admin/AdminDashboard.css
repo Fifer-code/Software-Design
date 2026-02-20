@@ -54,3 +54,52 @@ a{
 	margin: 0 0 22px;
 	color: var(--main-muted);
 }
+
+.admin-subcard{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 50px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard-2{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 200px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard-3{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 25px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard p, textarea{
+    margin-bottom: 5px;
+}

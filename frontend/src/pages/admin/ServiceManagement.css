@@ -9,7 +9,7 @@
 	transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.admin-queue-management{
+.admin-subcard{
     background: var(--main-card);
     border: 1px solid var(--main-border);
     border-radius: 18px;
