@@ -1,0 +1,186 @@
+/* UserSidebar - cohesive with auth.css design system */
+
+/* Main layout container - holds sidebar and main content side by side */
+.sidebar-layout {
+	display: flex;
+	height: 100vh;
+	background: var(--main-bg);
+}
+
+/* React-pro-sidebar root container - the sidebar itself */
+.ps-sidebar-root {
+	background: var(--main-card) !important;
+	border-right: 1px solid var(--main-border) !important;
+	box-shadow: 4px 0 24px rgba(29, 36, 41, 0.08);
+	transition: width 300ms ease;
+}
+
+/* Main wrapper inside sidebar - contains menu and footer */
+.sidebar-main {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+/* Scrollable menu container - wraps Menu component to allow scrolling */
+.sidebar-menu-container {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-top: 20px;
+	position: relative;
+}
+
+/* Decorative gradient overlay - adds visual interest to menu area */
+.sidebar-menu-container::before {
+	content: "";
+	position: absolute;
+	inset: -20% 30% auto -40%;
+	height: 200px;
+	background: radial-gradient(circle at 30% 30%, rgba(31, 122, 122, 0.08), transparent 60%);
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* React-pro-sidebar Menu component root */
+.ps-menu-root {
+	position: relative;
+	z-index: 1;
+}
+
+/* Individual menu item wrapper - spacing between items */
+.ps-menuitem-root {
+	margin: 4px 12px;
+}
+
+/* Menu button base styles - Dashboard, Join Queue, Queue Status, History, Feedback buttons */
+.ps-menu-button {
+	padding: 12px 16px !important;
+	border-radius: 12px !important;
+	color: var(--main-ink) !important;
+	font-size: 0.95rem !important;
+	font-weight: 500 !important;
+	transition: all 150ms ease !important;
+	position: relative;
+	background: transparent !important;
+}
+
+/* Menu button hover state - subtle gradient and color change */
+.ps-menu-button:hover {
+	background: linear-gradient(135deg, rgba(31, 122, 122, 0.08), rgba(31, 122, 122, 0.12)) !important;
+	color: var(--main-accent) !important;
+	transform: translateX(2px);
+}
+
+/* Active/selected menu item state - highlights current page with gradient */
+.ps-menu-button:active,
+.ps-active > .ps-menu-button,
+.ps-menuitem-root a.active ~ .ps-menu-button,
+.ps-menuitem-root:has(a.active) .ps-menu-button {
+	background: linear-gradient(135deg, var(--main-accent), #2e9a9a) !important;
+	color: #fff !important;
+	box-shadow: 0 4px 12px rgba(31, 122, 122, 0.2);
+}
+
+/* Sidebar footer - contains user avatar, username, and logout button */
+.sidebar-footer {
+	flex-shrink: 0;
+	margin-top: auto;
+	padding: 16px;
+	border-top: 1px solid var(--main-border);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: var(--main-card);
+	position: relative;
+	z-index: 1;
+}
+
+/* User avatar circle - displays user profile picture or initial */
+.sidebar-avatar {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: linear-gradient(135deg, var(--main-accent), #2e9a9a);
+	box-shadow: 0 2px 8px rgba(31, 122, 122, 0.2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
+/* Username text display in footer */
+.sidebar-user {
+	flex: 1;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: var(--main-ink);
+}
+
+/* Logout button/link in footer */
+.sidebar-logout {
+	font-size: 0.85rem;
+	padding: 6px 12px;
+	border-radius: 8px;
+	border: 1px solid var(--main-border);
+	background: transparent;
+	color: var(--main-muted);
+	text-decoration: none;
+	cursor: pointer;
+	transition: all 150ms ease;
+	font-weight: 500;
+}
+
+/* Logout button hover state - orange/coral accent */
+.sidebar-logout:hover {
+	background: rgba(224, 122, 95, 0.08);
+	border-color: var(--main-accent-2);
+	color: var(--main-accent-2);
+	transform: translateY(-1px);
+}
+
+/* Main content area - right side of layout where pages render */
+.sidebar-layout main {
+	flex: 1;
+	padding: 20px;
+	overflow-y: auto;
+	background: var(--main-bg);
+}
+
+/* Scrollbar styling for menu container - width */
+.sidebar-menu-container::-webkit-scrollbar {
+	width: 6px;
+}
+
+/* Scrollbar track - background behind scrollbar thumb */
+.sidebar-menu-container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Scrollbar thumb - the draggable part */
+.sidebar-menu-container::-webkit-scrollbar-thumb {
+	background: var(--main-border);
+	border-radius: 3px;
+}
+
+/* Scrollbar thumb hover state - darker on hover */
+.ps-sidebar-container::-webkit-scrollbar-thumb:hover {
+	background: var(--main-muted);
+}
+
+/* Mobile/tablet responsive adjustments - stacks sidebar on top of content */
+@media (max-width: 768px) {
+	.sidebar-layout {
+		flex-direction: column;
+	}
+	
+	.ps-sidebar-root {
+		width: 100% !important;
+		border-right: none !important;
+		border-bottom: 1px solid var(--main-border) !important;
+	}
+}
