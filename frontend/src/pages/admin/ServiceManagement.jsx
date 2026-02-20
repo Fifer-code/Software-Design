@@ -7,7 +7,9 @@ function ServiceManagement(){
         <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
             <h2>Service Managemenet</h2>
+
             <div className = "admin-card-container">
+
                 <div className = "admin-card-1">
                     <h1>Create Service</h1>
                     <p>Create Brand New Custom Services</p>
@@ -31,6 +33,7 @@ function ServiceManagement(){
                         <button type = "submit">Create New Service</button>
                     </form>
                 </div>
+
                 <div className = "admin-card-2">
                     <h1>Edit Service</h1>
 
@@ -52,31 +55,131 @@ function ServiceManagement(){
                             <div className="edit-middle">
                                 <div className = "form-group">
                                     <label>Description:</label>
-                                    <textarea rows="3"></textarea>
+                                    <textarea rows="2"></textarea>
                                 </div>
                             </div>
 
                             <div className="edit-right">
-                                <select className = "form-group">
-                                    <option value = "high">High</option>
-                                    <option value = "medium">Medium</option>
-                                    <option value = "low">Low</option>
-                                </select>
+                                <div className = "form-group" >
+                                    <label>Priority: </label>
+                                    <select>
+                                        <option value = "high">High</option>
+                                        <option value = "medium">Medium</option>
+                                        <option value = "low">Low</option>
+                                    </select>
+                                </div>
+                                <button type="submit" className="save-btn">Save</button>
+                            </div>
+                        </form>
+
+                    </div>
+
+                    <div className = "admin-subcard">
+                        <p>Banking Queue 1</p>
+
+                        <form className="admin-edit-form">
+                            <div className = "edit-left">
+                                <div className = "form-group">
+                                    <label>Service Name: </label>
+                                    <input type = "text" required maxLength="100" />
+                                </div>
+                                <div className = "form-group">
+                                    <label>Expected Duration: </label>
+                                    <input type = "number"  required min = "1"/>
+                                </div>
+                            </div>
+
+                            <div className="edit-middle">
+                                <div className = "form-group">
+                                    <label>Description:</label>
+                                    <textarea rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div className="edit-right">
+                                <div className = "form-group" >
+                                <label>Priority: </label>
+                                    <select>
+                                        <option value = "high">High</option>
+                                        <option value = "medium">Medium</option>
+                                        <option value = "low">Low</option>
+                                    </select>
+                                </div>
                                 <button type="submit" className="save-btn">Save</button>
                             </div>
                         </form>
                     </div>
 
                     <div className = "admin-subcard">
-                        <p>Banking Queue 1</p>
-                    </div>
-
-                    <div className = "admin-subcard">
                         <p>Student Advising Queue 1</p>
+
+                        <form className="admin-edit-form">
+                            <div className = "edit-left">
+                                <div className = "form-group">
+                                    <label>Service Name: </label>
+                                    <input type = "text" required maxLength="100" />
+                                </div>
+                                <div className = "form-group">
+                                    <label>Expected Duration: </label>
+                                    <input type = "number"  required min = "1"/>
+                                </div>
+                            </div>
+
+                            <div className="edit-middle">
+                                <div className = "form-group">
+                                    <label>Description:</label>
+                                    <textarea rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div className="edit-right">
+                                <div className = "form-group" >
+                                    <label>Priority: </label>
+                                    <select>
+                                        <option value = "high">High</option>
+                                        <option value = "medium">Medium</option>
+                                        <option value = "low">Low</option>
+                                    </select>
+                                </div>
+                                <button type="submit" className="save-btn">Save</button>
+                            </div>
+                        </form>
                     </div>
 
                     <div className = "admin-subcard">
                         <p>placeholder</p>
+
+                        <form className="admin-edit-form">
+                            <div className = "edit-left">
+                                <div className = "form-group">
+                                    <label>Service Name: </label>
+                                    <input type = "text" required maxLength="100" />
+                                </div>
+                                <div className = "form-group">
+                                    <label>Expected Duration: </label>
+                                    <input type = "number"  required min = "1"/>
+                                </div>
+                            </div>
+
+                            <div className="edit-middle">
+                                <div className = "form-group">
+                                    <label>Description:</label>
+                                    <textarea rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div className="edit-right">
+                                <div className = "form-group" >
+                                    <label>Priority: </label>
+                                    <select>
+                                        <option value = "high">High</option>
+                                        <option value = "medium">Medium</option>
+                                        <option value = "low">Low</option>
+                                    </select>
+                                </div>
+                                <button type="submit" className="save-btn">Save</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

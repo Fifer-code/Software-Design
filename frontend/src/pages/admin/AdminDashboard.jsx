@@ -43,16 +43,16 @@ function AdminDashboard() {
             </div>
             <div className = "admin-card-3">
                 <h1>Quick actions</h1>
-                <div className = "admin-subcard">
+                <div className = "admin-subcard form-group">
                     <p>Select Queue to Pause</p>
-                    <select className = "form-group">
+                    <select>
                         <option></option>
                         <option></option>
                         <option></option>
                         <option></option>
                     </select>
                 </div>
-                <div className = "admin-subcard">
+                <div className = "admin-subcard form-group">
                     <p>Select Queue to Close</p>
                     <select>
                         <option></option>
@@ -61,7 +61,7 @@ function AdminDashboard() {
                         <option></option>
                     </select>
                 </div>
-                <div className = "admin-subcard">
+                <div className = "admin-subcard form-group">
                     <p>Select Queue to Open</p>
                     <select>
                         <option></option>

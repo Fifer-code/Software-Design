@@ -7,7 +7,7 @@ function QueueManagement(){
         <div className = "admin-layout">
         <AdminSidebar></AdminSidebar>
         <div className = "admin-shell">
-            <h2>Admin Dashboard</h2>
+            <h2>Queue Management</h2>
             <div className = "admin-card-container">
                 <div className = "admin-card-1">
                     <h1>Avaialabe Queues</h1>
