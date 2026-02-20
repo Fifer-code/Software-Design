@@ -7,6 +7,10 @@ function UserSidebar() {
     <div className="sidebar-layout">
       <Sidebar>
         <div className="sidebar-main">
+          <div className="sidebar-header">
+            <h2 className="sidebar-title">QueueSmart</h2>
+          </div>
+
           <div className="sidebar-menu-container">
             <Menu>
               <MenuItem component={<NavLink to="/user/dashboard" />}>Dashboard</MenuItem>

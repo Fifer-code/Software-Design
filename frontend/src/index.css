@@ -1,11 +1,11 @@
 :root {
-  --main-bg: #f4f1ec;
-  --main-card: #ffffff;
-  --main-ink: #1d2429;
+  --main-bg: #0d1117;
+  --main-card: #161b22;
+  --main-ink: #c9d1d9;
   --main-muted: #5f6b72;
-  --main-accent: #1f7a7a;
-  --main-accent-2: #e07a5f;
-  --main-border: #d9d3ca;
+  --main-accent: #58a6ff;
+  --main-accent-2: #1f6feb;
+  --main-border: #30363d;
   --main-shadow: 0 24px 60px rgba(29,36,41,0.18);
 
 
@@ -13,9 +13,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: var(--main-bg);
+  background-color: var(--main-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -25,11 +25,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--main-accent);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--main-accent-2);
 }
 
 body {
@@ -55,12 +55,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--main-card);
+  color: var(--main-ink);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--main-accent);
 }
 button:focus,
 button:focus-visible {

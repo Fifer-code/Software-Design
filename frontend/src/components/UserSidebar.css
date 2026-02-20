@@ -4,15 +4,20 @@
 .sidebar-layout {
 	display: flex;
 	height: 100vh;
-	background: var(--main-bg);
+	background: var(--main-bg) !important;
 }
 
 /* React-pro-sidebar root container - the sidebar itself */
 .ps-sidebar-root {
 	background: var(--main-card) !important;
 	border-right: 1px solid var(--main-border) !important;
-	box-shadow: 4px 0 24px rgba(29, 36, 41, 0.08);
-	transition: width 300ms ease;
+	box-shadow: 4px 0 24px rgba(29, 36, 41, 0.08) !important;
+	transition: width 300ms ease !important;
+}
+
+/* Override library's scoped CSS class for sidebar background */
+.ps-sidebar-root [class*="css-"] {
+	background: var(--main-card) !important;
 }
 
 /* Main wrapper inside sidebar - contains menu and footer */
@@ -22,6 +27,25 @@
 	height: 100%;
 	position: relative;
 	overflow: hidden;
+}
+
+/* Sidebar header - logo and title at the top */
+.sidebar-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 20px 16px;
+	border-bottom: 1px solid var(--main-border);
+	flex-shrink: 0;
+}
+
+/* Application title */
+.sidebar-title {
+	margin: 0;
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: var(--main-ink);
+	letter-spacing: -0.02em;
 }
 
 /* Scrollable menu container - wraps Menu component to allow scrolling */
@@ -74,14 +98,27 @@
 	transform: translateX(2px);
 }
 
+/* Remove library backgrounds from hover button children */
+.ps-menu-button:hover [class*="css-"] {
+	background: transparent !important;
+}
+
 /* Active/selected menu item state - highlights current page with gradient */
 .ps-menu-button:active,
 .ps-active > .ps-menu-button,
 .ps-menuitem-root a.active ~ .ps-menu-button,
 .ps-menuitem-root:has(a.active) .ps-menu-button {
-	background: linear-gradient(135deg, var(--main-accent), #2e9a9a) !important;
+	background: linear-gradient(135deg, var(--main-accent), var(--main-accent-2)) !important;
 	color: #fff !important;
 	box-shadow: 0 4px 12px rgba(31, 122, 122, 0.2);
+}
+
+/* Remove library backgrounds from active button children */
+.ps-menu-button:active [class*="css-"],
+.ps-active > .ps-menu-button [class*="css-"],
+.ps-menuitem-root a.active ~ .ps-menu-button [class*="css-"],
+.ps-menuitem-root:has(a.active) .ps-menu-button [class*="css-"] {
+	background: transparent !important;
 }
 
 /* Sidebar footer - contains user avatar, username, and logout button */
@@ -135,7 +172,7 @@
 	font-weight: 500;
 }
 
-/* Logout button hover state - orange/coral accent */
+/* Logout button hover state */
 .sidebar-logout:hover {
 	background: rgba(224, 122, 95, 0.08);
 	border-color: var(--main-accent-2);
@@ -169,7 +206,7 @@
 
 /* Scrollbar thumb hover state - darker on hover */
 .ps-sidebar-container::-webkit-scrollbar-thumb:hover {
-	background: var(--main-muted);
+	background: var(--main-bg);
 }
 
 /* Mobile/tablet responsive adjustments - stacks sidebar on top of content */
