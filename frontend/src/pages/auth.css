@@ -152,6 +152,12 @@ button[type="submit"]:hover {
 	}
 }
 
+.form-group input.input-error,
+.form-group select.input-error {
+	border-color: #b94a3a;
+	box-shadow: 0 0 0 3px rgba(185, 74, 58, 0.1);
+}
+
 @media (max-width: 600px) {
 	.auth-page,
 	.login-container {

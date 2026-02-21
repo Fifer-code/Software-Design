@@ -2,6 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./auth.css";
 
+const EMAIL_MAX = 100;
+const PASSWORD_MAX = 128;
+
 function Login() {
   const navigate = useNavigate();
 
@@ -16,6 +19,8 @@ function Login() {
 
     if (!email) {
       newErrors.email = "Email is required";
+    } else if (email.length > EMAIL_MAX) {
+      newErrors.email = `Email cannot exceed ${EMAIL_MAX} characters`;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "Enter a valid email address";
     }
@@ -24,6 +29,8 @@ function Login() {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    } else if (password.length > PASSWORD_MAX) {
+      newErrors.password = `Password cannot exceed ${PASSWORD_MAX} characters`;
     }
 
     setErrors(newErrors);
@@ -54,20 +61,31 @@ function Login() {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="login-email">Email</label>
             <input
+              id="login-email"
               type="email"
+              maxLength={EMAIL_MAX}
+              required
+              placeholder="you@example.com"
               value={email}
+              className={errors.email ? "input-error" : ""}
               onChange={(e) => setEmail(e.target.value)}
             />
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               type="password"
+              maxLength={PASSWORD_MAX}
+              required
+              minLength={6}
+              placeholder="Min. 6 characters"
               value={password}
+              className={errors.password ? "input-error" : ""}
               onChange={(e) => setPassword(e.target.value)}
             />
             {errors.password && <span className="error">{errors.password}</span>}
@@ -75,8 +93,8 @@ function Login() {
 
           {/* Role selector for testing. Could be removed in the future and done in backend. */}
           <div className="form-group">
-            <label>Login as</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <label htmlFor="login-role">Login as</label>
+            <select id="login-role" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
               <option value="admin">Administrator</option>
             </select>
