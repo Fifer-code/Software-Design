@@ -1,0 +1,136 @@
+.admin-layout{
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.admin-shell {
+    height: 100%;
+    background: var(--main-bg);
+    padding: 1px; 
+    padding: 24px;
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.admin-card-container{
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    height: calc(100% - 40px);
+}
+
+h2{
+    margin: 0px;
+    margin-bottom: 10px;
+}
+
+a{
+    cursor: pointer;
+}
+
+.admin-card-1, .admin-card-2, .admin-card-3{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 100%;
+    min-width: 200px;
+    animation: auth-rise 500ms ease-out;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 32px 28px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.admin-card-2{
+    flex: 2;
+}
+
+.admin-card-1 h1, .admin-card-2 h1, .admin-card-3 h1{
+    color: var(--main-ink);
+    margin: 0 0 6px;
+	font-size: 2.1rem;
+	letter-spacing: -0.03em;
+    overflow-wrap: break-word;
+}
+
+.admin-card-1 p, .admin-card-2 p, .admin-card-3 p {
+	margin: 0 0 22px;
+	color: var(--main-muted);
+}
+
+.admin-subcard{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 10%;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard p, .admin-subcard-tall p, .admin-subcard-short p{
+    color: var(--main-accent-2);
+    font-weight: bold;
+}
+
+.admin-card-2 .admin-subcard h3, .admin-card-1 .admin-subcard h3{
+    color: var(--main-accent-2);
+    margin: 0px 0px 10px 0px;
+}
+
+.admin-card-2 .admin-subcard p, .admin-card-1 .admin-subcard p {
+    color: var(--main-ink);
+    font-weight: normal; 
+}
+
+
+.admin-subcard-tall{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 150px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard-tall p {
+    margin-bottom: 5px;
+}
+
+.admin-subcard-short{
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    min-height: 25px;
+    min-width: 200px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    padding: 16px 14px;
+    margin: 10px;
+}
+
+.admin-subcard p, textarea{
+    margin-bottom: 5px;
+}
