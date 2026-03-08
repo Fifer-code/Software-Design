@@ -1,3 +1,7 @@
+// backend setup imports
+import {useEffect} from "react";
+import axios from "axios";
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
 import NotificationToast from "./components/NotificationToast";
@@ -18,6 +22,16 @@ import History from "./pages/UserDashboard/History";
 import Feedback from "./pages/UserDashboard/Feedback";
 
 function App() {
+    // backend setup connection
+    const fetchAPI = async () => {
+        const response = await axios.get("http://localhost:8080/api")
+        console.log(response.data.fruits);
+    };
+
+    useEffect(() => {
+        fetchAPI();
+    }, []);
+
   return (
     <NotificationProvider>
       <BrowserRouter>
