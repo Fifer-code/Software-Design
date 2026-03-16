@@ -9,7 +9,8 @@ const PASSWORD_MAX = 128;
 function Register() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,12 +19,20 @@ function Register() {
   const validate = () => {
     const newErrors = {};
 
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
-    } else if (name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
-    } else if (name.length > NAME_MAX) {
-      newErrors.name = `Name cannot exceed ${NAME_MAX} characters`;
+    if (!firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    } else if (firstName.trim().length < 2) {
+      newErrors.firstName = "First name must be at least 2 characters";
+    } else if (firstName.length > NAME_MAX) {
+      newErrors.firstName = `First name cannot exceed ${NAME_MAX} characters`;
+    }
+
+    if (!lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (lastName.trim().length < 2) {
+      newErrors.lastName = "Last name must be at least 2 characters";
+    } else if (lastName.length > NAME_MAX) {
+      newErrors.lastName = `Last name cannot exceed ${NAME_MAX} characters`;
     }
 
     if (!email) {
@@ -59,7 +68,7 @@ function Register() {
 
     // Mock register
     const existing = JSON.parse(localStorage.getItem("mockUsers") || "[]");
-    existing.push({ name, email, role: "user" });
+    existing.push({ firstName, lastName, email, role: "user" });
     localStorage.setItem("mockUsers", JSON.stringify(existing));
 
     navigate("/");
@@ -73,18 +82,35 @@ function Register() {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
-            <label htmlFor="reg-name">Name</label>
+            <label htmlFor="reg-first-name">First Name</label>
             <input
-              id="reg-name"
+              id="reg-first-name"
               type="text"
               maxLength={NAME_MAX}
               required
-              placeholder="Your full name"
-              value={name}
-              className={errors.name ? "input-error" : ""}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="Your first name"
+              value={firstName}
+              className={errors.firstName ? "input-error" : ""}
+              onChange={(e) => setFirstName(e.target.value)}
             />
-            {errors.name && <span className="error">{errors.name}</span>}
+            {errors.firstName && (
+              <span className="error">{errors.firstName}</span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="reg-last-name">Last Name</label>
+            <input
+              id="reg-last-name"
+              type="text"
+              maxLength={NAME_MAX}
+              required
+              placeholder="Your last name"
+              value={lastName}
+              className={errors.lastName ? "input-error" : ""}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+            {errors.lastName && <span className="error">{errors.lastName}</span>}
           </div>
 
           <div className="form-group">
