@@ -1,13 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
+import axios from "axios";
 import "/src/userdashboard.css";
-
-const services = [
-  { id: 1, name: "DMV", waitTime: 25 },
-  { id: 2, name: "Banking Services", waitTime: 10 },
-  { id: 3, name: "Student Advising", waitTime: 40 },
-];
 
 const NAME_MAX = 50;
 const REASON_MAX = 150;
@@ -16,10 +11,31 @@ function JoinQueue() {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
 
+  const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState("");
   const [fullName, setFullName] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState({});
+
+
+useEffect(() => {
+  const fetchServices = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/services");
+      setServices(
+  Object.entries(res.data.services || {}).map(([id, value]) => ({
+    id,
+    ...value
+  }))
+);
+    } catch (err) {
+      console.error(err);
+      setServices([]);
+    }
+  };
+
+  fetchServices();
+}, []);
 
   const validate = () => {
     const newErrors = {};
@@ -44,31 +60,47 @@ function JoinQueue() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleJoin = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
 
-    const service = services.find((s) => s.id === Number(selectedService));
+  const handleJoin = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    // Store queue info in localStorage for QueueStatus page
-    const queueEntry = {
-      service: service.name,
-      position: Math.floor(Math.random() * 8) + 1,
-      estimatedWait: service.waitTime,
-      status: "Waiting",
-      joinedAt: new Date().toISOString(),
-      fullName: fullName.trim(),
-      reason: reason.trim(),
-    };
-    localStorage.setItem("currentQueue", JSON.stringify(queueEntry));
+  try {
+    const service = services.find((s) => String(s.id) === selectedService);
+
+    if (!service) {
+      addNotification("Invalid service selected", "error");
+      return;
+    }
+
+    const res = await axios.post(
+      `http://localhost:8080/api/queues/${service.id}/join`,
+      {
+        name: fullName.trim(),
+        serviceId: service.id,
+        priority: "Low",
+      }
+    );
+
+    const ticket = res.data;
+
+
+    localStorage.setItem("currentTicket", JSON.stringify(ticket));
 
     addNotification(
       `You joined the ${service.name} queue. Estimated wait: ${service.waitTime} min.`,
       "success"
     );
 
+
     navigate("/user/status");
-  };
+  } catch (err) {
+    console.error(err);
+    console.log(err.response?.data);
+    addNotification("Failed to join queue", "error");
+  }
+};
+
 
   return (
     <div className="page-container">
@@ -78,7 +110,7 @@ function JoinQueue() {
         {services.map((service) => (
           <div className="card" key={service.id}>
             <h3>{service.name}</h3>
-            <p>Estimated Wait: {service.waitTime} minutes</p>
+            <p>Estimated Wait: {service.waitTime ?? "N/A"} minutes</p>
           </div>
         ))}
       </div>
@@ -117,7 +149,7 @@ function JoinQueue() {
               <option value="">-- Choose a service --</option>
               {services.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} (≈ {s.waitTime} min)
+                  {s.name} (≈ {s.waitTime ?? "N/A"} min)
                 </option>
               ))}
             </select>

@@ -1,71 +1,96 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
+import axios from "axios";
 import "/src/userdashboard.css";
 
 function QueueStatus() {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
-  const [queue, setQueue] = useState(null);
+
+  const [ticket, setTicket] = useState(null);
+  const [position, setPosition] = useState(null);
+  const [queueLength, setQueueLength] = useState(0);
 
   useEffect(() => {
-    const stored = localStorage.getItem("currentQueue");
+    const stored = localStorage.getItem("currentTicket");
     if (stored) {
-      setQueue(JSON.parse(stored));
+      setTicket(JSON.parse(stored));
     }
   }, []);
 
-  // Simulate position updates every 15 seconds
   useEffect(() => {
-    if (!queue || queue.position <= 1) return;
+    if (!ticket) return;
 
-    const interval = setInterval(() => {
-      setQueue((prev) => {
-        if (!prev || prev.position <= 1) {
-          clearInterval(interval);
-          return prev;
-        }
-        const updated = { ...prev, position: prev.position - 1 };
-        localStorage.setItem("currentQueue", JSON.stringify(updated));
+    const fetchQueue = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/queues");
+        const queues = res.data.queues || {};
+        const serviceQueue = queues[ticket.serviceId] || [];
 
-        if (updated.position === 1) {
-          addNotification("You're next in line! Please be ready.", "warning");
+        const index = serviceQueue.findIndex(
+          (u) => u.ticketId === ticket.ticketId
+        );
+
+        setPosition(index === -1 ? null : index + 1);
+        setQueueLength(serviceQueue.length);
+
+        if (newPosition != null) {
+        if (newPosition === 1) {
+          addNotification(
+            "You're next in line! Please be ready.",
+            "warning"
+          );
         } else {
           addNotification(
-            `Queue update: You moved to position ${updated.position}.`,
+            `Queue update: You moved to position ${newPosition}.`,
             "info"
           );
         }
+      }
+      
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-        return updated;
-      });
-    }, 15000);
-
+    fetchQueue();
+    const interval = setInterval(fetchQueue, 5000);
     return () => clearInterval(interval);
-  }, [queue?.position, addNotification]);
+  }, [ticket]);
 
-  const handleLeave = () => {
-    const serviceName = queue?.service || "the queue";
+  const handleLeave = async () => {
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/queues/${ticket.serviceId}/${ticket.ticketId}`
+      );
 
-    // Save to history
-    const history = JSON.parse(localStorage.getItem("queueHistory") || "[]");
-    history.unshift({
-      service: queue.service,
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      status: "Left Queue",
-    });
-    localStorage.setItem("queueHistory", JSON.stringify(history));
+      const historyItem = {
+        date: new Date().toLocaleString(),
+        service: ticket.serviceName || ticket.serviceId,
+        status: "Left",
+      };
 
-    localStorage.removeItem("currentQueue");
-    setQueue(null);
+      const prevHistory = JSON.parse(
+        localStorage.getItem("queueHistory") || "[]"
+      );
+      const updatedHistory = Array.isArray(prevHistory)
+        ? [...prevHistory, historyItem]
+        : [historyItem];
 
-    addNotification(`You left the ${serviceName} queue.`, "info");
+      localStorage.setItem("queueHistory", JSON.stringify(updatedHistory));
+
+      localStorage.removeItem("currentTicket");
+      setTicket(null);
+
+      addNotification(`You left the ${ticket.serviceId} queue.`, "info");
+    } catch (err) {
+      console.error(err);
+      addNotification("Failed to leave queue", "error");
+    }
   };
 
-  if (!queue) {
+  if (!ticket) {
     return (
       <div className="page-container">
         <h2 className="page-title">Queue Status</h2>
@@ -83,18 +108,27 @@ function QueueStatus() {
     );
   }
 
+
+  const serviceIdLabel =
+    typeof ticket?.serviceId === "string"
+      ? ticket.serviceId.toUpperCase()
+      : "Unknown";
+
+  const estimatedWaitLabel =
+    ticket?.estimatedWait != null ? ticket.estimatedWait : "N/A";
+
+  const statusLabel =
+    position === 1 ? "You're next!" : ticket?.status || "Unknown";
+
   return (
     <div className="page-container">
       <h2 className="page-title">Queue Status</h2>
 
       <div className="card">
-        <h3>{queue.service} Queue</h3>
-        <p>Position: {queue.position}</p>
-        <p>Estimated Wait: {queue.estimatedWait} minutes</p>
-        <p>
-          Status:{" "}
-          {queue.position === 1 ? "You're next!" : queue.status}
-        </p>
+        <h3>{serviceIdLabel} Queue</h3>
+        <p>Position: {position ?? "N/A"}</p>
+        <p>Estimated Wait: {estimatedWaitLabel} minutes</p>
+        <p>Status: {statusLabel}</p>
         <button className="secondary-btn" onClick={handleLeave}>
           Leave Queue
         </button>

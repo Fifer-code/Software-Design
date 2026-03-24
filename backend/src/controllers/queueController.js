@@ -115,4 +115,33 @@ const removeUser = (req, res) => {
     res.json({ success: true, message: "User removed" });
 };
 
-module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser };
+const joinQueue = (req, res) => {
+    const { serviceId } = req.params;
+    const { name } = req.body;
+
+    // validation
+    if (!name || typeof name !== 'string') {
+        return res.status(400).json({ success: false, message: "Invalid name" });
+    }
+
+    if (!queues[serviceId]) {
+        return res.status(404).json({ success: false, message: "Service not found" });
+    }
+
+    // generate ticket ID
+    const prefix = serviceId.charAt(0).toUpperCase();
+    const ticketNumber = queues[serviceId].length + 1;
+    const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
+
+    const newUser = { ticketId, name };
+
+    queues[serviceId].push(newUser);
+
+    res.json({
+    ticketId: newUser.ticketId,
+    name: newUser.name,
+    serviceId: serviceId
+    });
+};
+
+module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue };

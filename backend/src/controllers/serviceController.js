@@ -32,7 +32,18 @@ let serviceConfig = {
 
 // starts by getting default configs, but then gets current config for each service if edited
 const getService = (req, res) => {
-    res.json({ success: true, services: serviceConfig });
+    const servicesArray = Object.entries(serviceConfig).map(([id, data]) => ({
+        id,
+        name: data.name,
+        description: data.description,
+        duration: data.duration,
+        priority: data.priority
+    }));
+
+    res.json({
+        success: true,
+        services: servicesArray
+    });
 };
 
 // when creating service, it creates and appends to config object

@@ -26,11 +26,15 @@ app.use(express.json());
 
 // connect queue routes
 const queueRoutes = require('./src/routes/queueRoutes');
-app.use('/api/queue', queueRoutes);
+app.use('/api/queues', queueRoutes);
 
 // connect service routes
 const serviceRoutes = require('./src/routes/serviceRoutes');
 app.use('/api/services', serviceRoutes);
+
+const feedbackRoutes = require('./src/routes/feedback');
+app.use('/api/feedback', feedbackRoutes);
+
 
 
 // listen to requests, output if server started

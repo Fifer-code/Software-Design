@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNotifications } from "../../context/NotificationContext";
+import axios from "axios";
 import "/src/userdashboard.css";
 
 const COMMENT_MAX = 500;
@@ -26,12 +27,22 @@ function Feedback() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+const handleSubmit = async () => {
+  if (!validate()) return;
+
+  try {
+    await axios.post("http://localhost:8080/api/feedback", {
+      rating,
+      comment
+    });
 
     addNotification("Thank you! Your feedback has been submitted.", "success");
     setSubmitted(true);
-  };
+
+  } catch (error) {
+    addNotification("Failed to submit feedback", "error");
+  }
+};
 
   if (submitted) {
     return (
