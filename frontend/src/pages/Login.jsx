@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./auth.css";
 
 const EMAIL_MAX = 100;
 const PASSWORD_MAX = 128;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Validate email and password before submission
   const validate = () => {
@@ -38,18 +41,32 @@ function Login() {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
 
     if (!validate()) return;
 
-    // Mock login
-    localStorage.setItem("role", role);
+    setIsSubmitting(true);
 
-    if (role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/user/dashboard");
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email,
+        password,
+      });
+
+      const { role } = response.data;
+      localStorage.setItem("role", role);
+
+      if (role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/user/dashboard");
+      }
+    } catch (error) {
+      setSubmitError(error.response?.data?.error || "Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -71,6 +88,7 @@ function Login() {
               value={email}
               className={errors.email ? "input-error" : ""}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
@@ -87,20 +105,16 @@ function Login() {
               value={password}
               className={errors.password ? "input-error" : ""}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
 
-          {/* Role selector for testing. Could be removed in the future and done in backend. */}
-          <div className="form-group">
-            <label htmlFor="login-role">Login as</label>
-            <select id="login-role" value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="user">User</option>
-              <option value="admin">Administrator</option>
-            </select>
-          </div>
+          {submitError && <span className="error">{submitError}</span>}
 
-          <button type="submit">Login</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Logging in..." : "Login"}
+          </button>
 
           <Link to="/register" className="register-link">
             Don't have an account? Register here.

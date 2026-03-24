@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./auth.css";
 
 const NAME_MAX = 50;
 const EMAIL_MAX = 100;
 const PASSWORD_MAX = 128;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function Register() {
   const navigate = useNavigate();
@@ -15,6 +17,8 @@ function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -61,17 +65,28 @@ function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
 
     if (!validate()) return;
 
-    // Mock register
-    const existing = JSON.parse(localStorage.getItem("mockUsers") || "[]");
-    existing.push({ firstName, lastName, email, role: "user" });
-    localStorage.setItem("mockUsers", JSON.stringify(existing));
+    setIsSubmitting(true);
 
-    navigate("/");
+    try {
+      await axios.post(`${API_BASE_URL}/auth/register`, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email,
+        password,
+      });
+
+      navigate("/");
+    } catch (error) {
+      setSubmitError(error.response?.data?.error || "Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,6 +107,7 @@ function Register() {
               value={firstName}
               className={errors.firstName ? "input-error" : ""}
               onChange={(e) => setFirstName(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.firstName && (
               <span className="error">{errors.firstName}</span>
@@ -109,6 +125,7 @@ function Register() {
               value={lastName}
               className={errors.lastName ? "input-error" : ""}
               onChange={(e) => setLastName(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.lastName && <span className="error">{errors.lastName}</span>}
           </div>
@@ -124,6 +141,7 @@ function Register() {
               value={email}
               className={errors.email ? "input-error" : ""}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.email && <span className="error">{errors.email}</span>}
           </div>
@@ -140,6 +158,7 @@ function Register() {
               value={password}
               className={errors.password ? "input-error" : ""}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.password && <span className="error">{errors.password}</span>}
           </div>
@@ -155,13 +174,18 @@ function Register() {
               value={confirmPassword}
               className={errors.confirmPassword ? "input-error" : ""}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isSubmitting}
             />
             {errors.confirmPassword && (
               <span className="error">{errors.confirmPassword}</span>
             )}
           </div>
 
-          <button type="submit">Create Account</button>
+          {submitError && <span className="error">{submitError}</span>}
+
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Create Account"}
+          </button>
 
           <Link to="/" className="register-link">
             Already have an account? Log in.
