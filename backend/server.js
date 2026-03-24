@@ -32,6 +32,7 @@ app.use('/api/queues', queueRoutes);
 const serviceRoutes = require('./src/routes/serviceRoutes');
 app.use('/api/services', serviceRoutes);
 
+// connect feedback routes
 const feedbackRoutes = require('./src/routes/feedback');
 app.use('/api/feedback', feedbackRoutes);
 
