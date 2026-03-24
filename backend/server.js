@@ -27,6 +27,23 @@ app.get("/api", (req, res) => {
     })
 });
 
+// must be at the top of route connections
+app.use(express.json());
+
+// connect queue routes
+const queueRoutes = require('./src/routes/queueRoutes');
+app.use('/api/queues', queueRoutes);
+
+// connect service routes
+const serviceRoutes = require('./src/routes/serviceRoutes');
+app.use('/api/services', serviceRoutes);
+
+// connect feedback routes
+const feedbackRoutes = require('./src/routes/feedback');
+app.use('/api/feedback', feedbackRoutes);
+
+
+
 // listen to requests, output if server started
 app.listen(8080, () => {
     console.log("Server started on port 8080");

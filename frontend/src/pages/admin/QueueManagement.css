@@ -36,6 +36,7 @@
 }
 
 .queue-move-buttons{
+    height: 50%;
     width: 100%;
 	border: none;
 	border-radius: 12px;
@@ -46,6 +47,7 @@
 	transition: transform 150ms ease, box-shadow 150ms ease;
 	position: relative;
 	z-index: 1;
+    white-space: nowrap;
 }
 
 .queue-move-buttons:hover {

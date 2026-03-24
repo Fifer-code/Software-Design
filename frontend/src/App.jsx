@@ -21,6 +21,9 @@ import QueueStatus from "./pages/UserDashboard/QueueStatus";
 import History from "./pages/UserDashboard/History";
 import Feedback from "./pages/UserDashboard/Feedback";
 
+// backend queue connection
+import { QueueProvider } from './context/QueueContext';
+
 function App() {
     // backend setup connection
     const fetchAPI = async () => {
@@ -33,6 +36,7 @@ function App() {
     }, []);
 
   return (
+    <QueueProvider>
     <NotificationProvider>
       <BrowserRouter>
         <NotificationToast />
@@ -55,6 +59,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
+    </QueueProvider>
   );
 }
 

@@ -1,8 +1,23 @@
 import AdminSidebar from "../../components/AdminSidebar";
 import "./AdminDashboard.css"
+// backend connections
+import { useContext } from 'react';
+import { QueueContext } from '../../context/QueueContext';
 
+// modular card for service with configs from backend
+const DashboardCard = ({ title, peopleCount, estimatedWait, priority }) => (
+    <div className="admin-subcard">
+        <h3>{title}</h3>
+        <p>People in Queue: {peopleCount}</p>
+        <p>Estimated Wait: {estimatedWait} minutes</p>
+        <p>Priority: {priority}</p>
+    </div>
+);
 
 function AdminDashboard() {
+    // backend connection functions
+    const { waitTimes, queueLists, services } = useContext(QueueContext);
+
   return (
     <div className = "admin-layout">
         <div>
@@ -26,33 +41,41 @@ function AdminDashboard() {
                     <h3>placeholder</h3>
                 </div>
             </div>
-            <div className = "admin-card-2">
-                <h1>Current Queues & Lengths</h1>
-                <div className = "admin-subcard">
-                    <h3>DMV Queue 1</h3>
-                    <p>People in Queue: 18</p>
-                    <p>Estimated Wait: 45 minutes</p>
-                    <p>Priority: Low</p>
+            <div className="admin-card-2">
+                    <h1>Current Queues & Lengths</h1>
+                    {/* checks services by connecting to backend */}
+                    {services ? (
+                            <>
+                                <DashboardCard 
+                                    title = {services.dmv.name} 
+                                    peopleCount = {queueLists.dmv?.length || 0} 
+                                    estimatedWait = {waitTimes.dmv || 0} 
+                                    priority = {services.dmv.priority} 
+                                />
+                                <DashboardCard 
+                                    title = {services.bank.name} 
+                                    peopleCount = {queueLists.bank?.length || 0} 
+                                    estimatedWait = {waitTimes.bank || 0} 
+                                    priority = {services.bank.priority} 
+                                />
+                                <DashboardCard 
+                                    title = {services.advising.name} 
+                                    peopleCount = {queueLists.advising?.length || 0} 
+                                    estimatedWait = {waitTimes.advising || 0} 
+                                    priority = {services.advising.priority} 
+                                />
+                                <DashboardCard 
+                                    title = {services.placeholder.name} 
+                                    peopleCount = {queueLists.placeholder?.length || 0} 
+                                    estimatedWait = {waitTimes.placeholder || 0} 
+                                    priority = {services.placeholder.priority} 
+                                />
+                            </>
+                            
+                        ) : (
+                            <p>Loading services...</p>  
+                        )}{/* shows placeholder if not connected to backend */}
                 </div>
-                <div className = "admin-subcard">
-                    <h3>Banking Queue 1</h3>
-                    <p>People in Queue: 7</p>
-                    <p>Estimated Wait: 25 minutes</p>
-                    <p>Priority: Medium</p>
-                </div>
-                <div className = "admin-subcard">
-                    <h3>Student Advising Queue 1</h3>
-                    <p>People in Queue: 4</p>
-                    <p>Estimated Wait: 95 minutes</p>
-                    <p>Priority: High</p>
-                </div>
-                <div className = "admin-subcard">
-                    <h3>placeholder</h3>
-                    <p>People in Queue: </p>
-                    <p>Estimated Wait: </p>
-                    <p>Priority:</p>
-                </div>
-            </div>
             <div className = "admin-card-3">
                 <h1>Quick Actions</h1>
                 <div className = "admin-subcard form-group">

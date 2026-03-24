@@ -1,6 +1,6 @@
 /* Shared auth page styles for Login/Register */
 
-/* Testing with main theme variables - can switch to auth-specific if needed */
+/* Testing with main theme variables - can switch to auth-specific if needed
 :root {
 	/* --auth-bg: #f4f1ec; */
 	/* --auth-card: #ffffff; */
@@ -10,8 +10,6 @@
 	/* --auth-accent-2: #e07a5f; */
 	/* --auth-border: #d9d3ca; */
 	/* --auth-shadow: 0 24px 60px rgba(29, 36, 41, 0.18); */
-}
-*/
 
 .auth-shell {
 	min-height: 100vh;
