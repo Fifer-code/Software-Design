@@ -3,12 +3,18 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");       // used npm i cors
+const authRoutes = require('./src/routes/authRoutes.js');
+
 const corsOptions = {
     origin: ["http://localhost:5173"]
 };
 
 // gemini fix : Add this line to actively apply the CORS middleware to your app
 app.use(cors(corsOptions));
+app.use(express.json());  // Parse JSON request bodies
+
+// Routes
+app.use('/auth', authRoutes);
 
 // testing with array
 app.get("/api", (req, res) => {
