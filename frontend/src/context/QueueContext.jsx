@@ -13,7 +13,7 @@ export function QueueProvider({ children }) {
     const fetchQueueData = async () => {
         try {
             // connections and logic for the wait times
-            const waitRes = await fetch('http://localhost:8080/api/queue/wait-time');
+            const waitRes = await fetch('http://localhost:8080/api/queues/wait-time');
             const waitData = await waitRes.json();
             setWaitTimes({
                 dmv: waitData.dmvWaitTime,
@@ -23,7 +23,7 @@ export function QueueProvider({ children }) {
             });
 
             // connections and logic for the queue lists and updates
-            const listRes = await fetch('http://localhost:8080/api/queue');
+            const listRes = await fetch('http://localhost:8080/api/queues');
             const listData = await listRes.json();
             setQueueLists(listData.queues);
 

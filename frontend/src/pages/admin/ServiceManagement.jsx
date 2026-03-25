@@ -103,32 +103,72 @@ function ServiceManagement() {
             .catch(err => console.error("Failed to fetch services:", err));
     }, []);
 
+    // needed for create service form
+    const [newService, setNewService] = useState({
+        name: '',
+        description: '',
+        duration: '',
+        priority: ''
+    });
+
+    // update service
+    const handleNewServiceChange = (e) => {
+        setNewService({ ...newService, [e.target.name]: e.target.value });
+    };
+
+    // connect to backend and store to display
+    const handleCreate = async (e) => {
+        e.preventDefault();
+        try {
+            // makes id to store, comes from name with no spaces and lowercase for consistency
+            const generatedId = newService.name.toLowerCase().replace(/\s+/g, '');
+
+            const response = await fetch('http://localhost:8080/api/services', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: generatedId,
+                    ...newService,
+                    duration: Number(newService.duration)
+                })
+            });
+
+            if (response.ok) {
+                alert("Service successfully created!");
+                setNewService({ name: '', description: '', duration: '', priority: '' });
+            } else {
+                console.error("Failed to create service:", await response.text());
+            }
+        } catch (error) {
+            console.error("Error creating service:", error);
+        }
+    };
+
     return (
         <div className="admin-layout">
             <AdminSidebar />
             <div className="admin-shell">
                 <h2>Service Management</h2>
-                <div className="admin-card-container">
-                    
+                <div className="admin-card-container">                   
                     <div className="admin-card-1">
                         <h1>Create Service</h1>
                         <p>Create Brand New Custom Services</p>
-                        <form className="admin-create-form">
+                        <form className="admin-create-form" onSubmit={handleCreate}>
                             <div className="form-group">
                                 <label>Service Name:</label>
-                                <input type="text" required maxLength="100" />
+                                <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
                             </div>
                             <div className="form-group">
                                 <label>Description:</label>
-                                <textarea rows="5" required></textarea>
+                                <textarea rows="5" name="description" value={newService.description} onChange={handleNewServiceChange} required></textarea>
                             </div>
                             <div className="form-group">
                                 <label>Expected Duration:</label>
-                                <input type="number" required min="1" />
+                                <input type="number" name="duration" value={newService.duration} onChange={handleNewServiceChange} required min="1" />
                             </div>
                             <div className="form-group">
                                 <label>Priority: </label>
-                                <select defaultValue="" required>
+                                <select name="priority" value={newService.priority} onChange={handleNewServiceChange} required>
                                     <option value="" disabled hidden></option>
                                     <option value="High">High</option>
                                     <option value="Medium">Medium</option>
@@ -141,34 +181,22 @@ function ServiceManagement() {
 
                     <div className="admin-card-2">
                         <h1>Edit Service</h1>
-                        
-                        {/* checks connection to backend */}
+                        <p>Modify Existing Services</p>
                         {services ? (
                             <>
-                                <ServiceEditForm 
-                                    serviceId="dmv" 
-                                    title="DMV Queue 1" 
-                                    initialData={services.dmv} 
-                                />
-                                <ServiceEditForm 
-                                    serviceId="bank"
-                                    title="Banking Queue 1"
-                                    initialData={services.bank}
-                                />
-                                <ServiceEditForm
-                                    serviceId="advising"
-                                    title="Student Advising Queue 1"
-                                    initialData={services.advising}
-                                />
-                                <ServiceEditForm
-                                    serviceId="placeholder"
-                                    title="Placeholder"
-                                    initialData={services.placeholder}
-                                />
+                                {/* creates new cards depending on how many there are */}
+                                {services.map((service) => (
+                                    <ServiceEditForm 
+                                        key={service.id}
+                                        serviceId={service.id} 
+                                        title={service.name} 
+                                        initialData={service} 
+                                    />
+                                ))}
                             </>
                         ) : (
                             <p>Loading services...</p>
-                        )} {/* shows placeholder if not connected to backend */}
+                        )} 
                     </div>
 
                 </div>

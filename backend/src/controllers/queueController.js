@@ -42,7 +42,18 @@ const getWaitTime = (req, res) => {
 
 // get all queues
 const getQueueList = (req, res) => {
-    res.json({ success: true, queues });
+    // FIX: Before sending the queues, loop through your service configs.
+    // If a service exists but doesn't have a queue array yet, create an empty one!
+    for (const id in serviceConfig) {
+        if (!queues[id]) {
+            queues[id] = [];
+        }
+    }
+
+    res.json({
+        success: true,
+        queues
+    });
 };
 
 // logic for serve next user button in QueueManagement
@@ -119,12 +130,15 @@ const joinQueue = (req, res) => {
     const { serviceId } = req.params;
     const { name } = req.body;
 
-    // validation
     if (!name || typeof name !== 'string') {
         return res.status(400).json({ success: false, message: "Invalid name" });
     }
 
-    if (!queues[serviceId]) {
+    // FIX: If the queue doesn't exist, but the service IS in the config, initialize it.
+    if (!queues[serviceId] && serviceConfig[serviceId]) {
+        queues[serviceId] = [];
+    } else if (!queues[serviceId]) {
+        // Only throw a 404 if the service truly doesn't exist anywhere
         return res.status(404).json({ success: false, message: "Service not found" });
     }
 

@@ -61,37 +61,75 @@ const QueueCard = ({ serviceId, title, usersList, estimatedWait, priority, onSer
 
 function QueueManagement() {
     // backend connection functions
-    const { waitTimes, queueLists, fetchQueueData } = useContext(QueueContext);
+    const { waitTimes, queueLists, services, fetchQueueData } = useContext(QueueContext);
 
     // logic for serving next user in queue using button
     const handleServeNext = async (serviceId) => {
-        const response = await fetch(`http://localhost:8080/api/queue/${serviceId}/serve`, { method: 'POST' });
-        if (response.ok){
-            fetchQueueData();
+        try {
+            const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/serve`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                fetchQueueData(); // Refresh the UI
+            } else {
+                console.error("Failed to serve next:", await response.text());
+            }
+        } catch (error) {
+            console.error("Error serving next user:", error);
         }
     };
 
     // logic for for moving users pressing either move up or down button
     const handleMove = async (serviceId, ticketId, direction) => {
-        const response = await fetch(`http://localhost:8080/api/queue/${serviceId}/${ticketId}/move`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ direction })
-        });
-        if (response.ok){
-            fetchQueueData();
+        try {
+            // Fix 1: Must be a PATCH request to match queueRoutes.js
+            const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}/move`, {
+                method: 'PATCH', 
+                // Fix 2: Headers are required for req.body.direction to be parsed by express.json()
+                headers: {
+                    'Content-Type': 'application/json', 
+                },
+                // Fix 3: Send the direction ('up' or 'down') so the backend knows how to swap
+                body: JSON.stringify({ direction }) 
+            });
+    
+            if (response.ok) {
+                // Fix 4: Force React to re-render the new order by re-fetching
+                fetchQueueData(); 
+            } else {
+                console.error("Move failed:", await response.text());
+            }
+        } catch (error) {
+            console.error("Error moving user:", error);
         }
     };
 
     // logic for removing users when pressing remove button
     const handleRemove = async (serviceId, ticketId) => {
-        const response = await fetch(`http://localhost:8080/api/queue/${serviceId}/${ticketId}`, {
-            method: 'DELETE'
-        });
-        if (response.ok){
-            fetchQueueData();
+        try {
+            const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                fetchQueueData(); // Refresh the UI
+            } else {
+                console.error("Failed to remove:", await response.text());
+            }
+        } catch (error) {
+            console.error("Error removing user:", error);
         }
     };
+
+    if (!services || !queueLists || !waitTimes) {
+        return (
+            <div className="admin-layout">
+                <AdminSidebar />
+                <div className="admin-shell"><h2>Loading data...</h2></div>
+            </div>
+        );
+    }
 
     return (
         <div className="admin-layout">
@@ -100,53 +138,22 @@ function QueueManagement() {
                 <h2>Queue Management</h2>
                 <div className="admin-card-container">
                     <div className="admin-card-1">
-                        <h1>Available Queues & Information</h1>
-                        <div className="queue-grid-container">
-                            <QueueCard 
-                                serviceId="dmv"
-                                title="DMV Queue 1" 
-                                usersList={queueLists.dmv} 
-                                estimatedWait={waitTimes?.dmv || 0} 
-                                priority="Low"
-                                onServe={handleServeNext}
-                                onMove={handleMove} 
-                                onRemove={handleRemove}
-                            />
-
-                            <QueueCard 
-                                serviceId="bank"
-                                title="Banking Queue 1" 
-                                usersList={queueLists.bank}
-                                estimatedWait={waitTimes?.bank || 0} 
-                                priority="Medium"
-                                onServe={handleServeNext}
-                                onMove={handleMove} 
-                                onRemove={handleRemove}
-                            />
-
-                            <QueueCard 
-                                serviceId="advising"
-                                title="Student Advising Queue 1" 
-                                usersList={queueLists.advising} 
-                                estimatedWait={waitTimes?.advising || 0} 
-                                priority="High"
-                                onServe={handleServeNext}
-                                onMove={handleMove} 
-                                onRemove={handleRemove}
-                            />
-
-                            <QueueCard 
-                                serviceId="placeholder"
-                                title="Placeholder" 
-                                usersList={queueLists.placeholder} 
-                                estimatedWait={waitTimes?.placeholder || 0} 
-                                priority="Low"
-                                onServe={handleServeNext}
-                                onMove={handleMove} 
-                                onRemove={handleRemove}
-                            />
+                            <h1>Available Queues & Information</h1>
+                            {/* creates new cards depending on how many there are */}
+                            {services.map((service) => (
+                                <QueueCard 
+                                    key={service.id}
+                                    serviceId={service.id}
+                                    title={service.name} 
+                                    usersList={queueLists?.[service.id] || []} 
+                                    estimatedWait={waitTimes?.[service.id] || 0} 
+                                    priority={service.priority || "Low"}
+                                    onServe={handleServeNext}
+                                    onMove={handleMove} 
+                                    onRemove={handleRemove}
+                                />
+                            ))}
                         </div>
-                    </div>
                 </div>
             </div>
         </div>

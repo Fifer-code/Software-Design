@@ -18,6 +18,15 @@ function AdminDashboard() {
     // backend connection functions
     const { waitTimes, queueLists, services } = useContext(QueueContext);
 
+    if (!services || !queueLists || !waitTimes) {
+        return (
+            <div className="admin-layout">
+                <AdminSidebar />
+                <div className="admin-shell"><h2>Loading data...</h2></div>
+            </div>
+        );
+    }
+
   return (
     <div className = "admin-layout">
         <div>
@@ -42,40 +51,18 @@ function AdminDashboard() {
                 </div>
             </div>
             <div className="admin-card-2">
-                    <h1>Current Queues & Lengths</h1>
-                    {/* checks services by connecting to backend */}
-                    {services ? (
-                            <>
-                                <DashboardCard 
-                                    title = {services.dmv.name} 
-                                    peopleCount = {queueLists.dmv?.length || 0} 
-                                    estimatedWait = {waitTimes.dmv || 0} 
-                                    priority = {services.dmv.priority} 
-                                />
-                                <DashboardCard 
-                                    title = {services.bank.name} 
-                                    peopleCount = {queueLists.bank?.length || 0} 
-                                    estimatedWait = {waitTimes.bank || 0} 
-                                    priority = {services.bank.priority} 
-                                />
-                                <DashboardCard 
-                                    title = {services.advising.name} 
-                                    peopleCount = {queueLists.advising?.length || 0} 
-                                    estimatedWait = {waitTimes.advising || 0} 
-                                    priority = {services.advising.priority} 
-                                />
-                                <DashboardCard 
-                                    title = {services.placeholder.name} 
-                                    peopleCount = {queueLists.placeholder?.length || 0} 
-                                    estimatedWait = {waitTimes.placeholder || 0} 
-                                    priority = {services.placeholder.priority} 
-                                />
-                            </>
-                            
-                        ) : (
-                            <p>Loading services...</p>  
-                        )}{/* shows placeholder if not connected to backend */}
-                </div>
+                <h1>Current Queue & Lengths</h1>
+                {/* creates new cards depending on how many there are */}
+                {services.map((service) => (
+                    <DashboardCard 
+                        key={service.id}
+                        title={service.name || "Unnamed Queue"} 
+                        peopleCount={queueLists?.[service.id]?.length || 0} 
+                        estimatedWait={waitTimes?.[service.id] || 0} 
+                        priority={service.priority || "Low"} 
+                    />
+                ))}
+            </div>
             <div className = "admin-card-3">
                 <h1>Quick Actions</h1>
                 <div className = "admin-subcard form-group">
