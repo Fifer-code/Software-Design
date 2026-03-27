@@ -1,6 +1,7 @@
 // import data from serviceController
 const { serviceConfig } = require('./serviceController');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
+const { recordJoin, recordServed, recordRemoved } = require('./historyController');
 
 // fake queues to test
 // ticketId legend: D = dmv, B = bank, A = advising, P = placeholder
@@ -74,6 +75,9 @@ const serveNextUser = (req, res) => {
     // "serves" first user by removing them from queue array
     const servedUser = queues[serviceId].shift();
 
+    // record served user in history
+    recordServed(servedUser.ticketId, servedUser.name, serviceId);
+
     // notify the next users in line that they are close to being served
     const queue = queues[serviceId];
     if (queue[0]) triggerNearFrontNotification(queue[0].ticketId, queue[0].name, serviceId, 1);
@@ -125,8 +129,14 @@ const removeUser = (req, res) => {
         return res.status(404).json({ message: "Queue not found" });
     }
 
+    // find user before removing so we can record their name in history
+    const userToRemove = queues[serviceId].find(u => u.ticketId === ticketId);
+
     // use filter to creates a new array without the selected user
     queues[serviceId] = queues[serviceId].filter(u => u.ticketId !== ticketId);
+
+    // record removal in history if user was found
+    if (userToRemove) recordRemoved(ticketId, userToRemove.name, serviceId);
 
     // return success and info about removed user
     res.json({ success: true, message: "User removed" });
@@ -159,6 +169,9 @@ const joinQueue = (req, res) => {
 
     // notify the user that they have joined the queue
     triggerJoinNotification(ticketId, name, serviceId);
+
+    // record join in history
+    recordJoin(ticketId, name, serviceId);
 
     res.json({
     ticketId: newUser.ticketId,

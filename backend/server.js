@@ -46,6 +46,10 @@ app.use('/api/feedback', feedbackRoutes);
 const notificationRoutes = require('./src/routes/notificationRoutes');
 app.use('/api/notifications', notificationRoutes);
 
+// connect history routes
+const historyRoutes = require('./src/routes/historyRoutes');
+app.use('/api/history', historyRoutes);
+
 
 
 // listen to requests, output if server started
