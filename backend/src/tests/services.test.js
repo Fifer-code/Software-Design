@@ -38,6 +38,7 @@ describe("Services API", () => {
     expect(res.body.message).toBe("Missing required fields");
   });
 
+  // Gemini Fix: Extra tests generated to expand on existing tests
   // Test for getService (getting the list of all services)
   test("should retrieve all services", async () => {
     const res = await request(app).get("/api/services");

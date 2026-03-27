@@ -94,6 +94,7 @@ describe("Queue API", () => {
     expect(res.body.success).toBe(true);
   });
 
+  // Gemini Fix: Extra tests generated to expand on existing tests
   // --- TESTS FOR SERVING NEXT USER ---
   test("Serve next user successfully", async () => {
     // Setup: Join the queue first so someone is in line
