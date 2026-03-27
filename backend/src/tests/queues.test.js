@@ -106,10 +106,20 @@ describe("Queue API", () => {
   });
 
   test("Serve next user should fail if queue is empty", async () => {
-    // Action: Hit the serve endpoint on a queue that we know is empty
-    const res = await request(app).post("/api/queues/placeholder/serve");
+    // 1. Create a temporary service
+    await request(app).post("/api/services").send({
+      id: "emptyTest", name: "Empty", description: "Test", duration: 5, priority: "Low"
+    });
+
+    // 2. Have someone join it (This initializes the queue array to length 1)
+    await request(app).post("/api/queues/emptyTest/join").send({ name: "Ghost User" });
+
+    // 3. Serve that user (This drops the array length down to exactly 0)
+    await request(app).post("/api/queues/emptyTest/serve");
+
+    // 4. Action: Try to serve AGAIN. This will now hit the 400 error!
+    const res = await request(app).post("/api/queues/emptyTest/serve");
     
-    // Expecting the controller to catch the empty queue
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe("Queue is already empty");
   });
