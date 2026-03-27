@@ -96,43 +96,42 @@ describe("Queue API", () => {
 
   // --- TESTS FOR SERVING NEXT USER ---
   test("Serve next user successfully", async () => {
-    // 1. First, make sure someone is in the queue
+    // Setup: Join the queue first so someone is in line
     await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
 
-    // 2. Hit the serve endpoint
+    // Action: Hit the serve endpoint using the POST method from your routes
     const res = await request(app).post("/api/queues/dmv/serve");
     
     expect(res.statusCode).toBe(200);
-    // Assuming your controller returns some success message
   });
 
   test("Serve next user should fail if queue is empty", async () => {
-    // 1. Reset or ensure queue is empty (assuming a clean slate or resetting)
-    // 2. Hit the serve endpoint on an empty queue
+    // Action: Hit the serve endpoint on a queue that we know is empty
     const res = await request(app).post("/api/queues/placeholder/serve");
     
-    // This hits the "Queue is already empty" error on line 72
+    // Expecting the controller to catch the empty queue
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe("Queue is already empty");
   });
 
   test("Serve next user should return 404 for invalid service", async () => {
+    // Action: Send a POST request to a service ID that doesn't exist in the config
     const res = await request(app).post("/api/queues/fake-service/serve");
     
-    // This hits the "Service queue not found" error on line 67
     expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe("Service queue not found");
   });
 
   // --- TESTS FOR MOVING/REORDERING USERS ---
   test("Move user up in the queue", async () => {
-    // 1. Add two users
+    // Setup: Add two users to ensure we have someone to move up
     await request(app).post("/api/queues/dmv/join").send({ name: "Person 1" });
     const joinRes = await request(app).post("/api/queues/dmv/join").send({ name: "Person 2" });
     const ticketId = joinRes.body.ticketId;
 
-    // 2. Move the second user UP
+    // Action: Hit the move endpoint using PATCH as defined in your routes
     const res = await request(app)
-      .put(`/api/queues/dmv/${ticketId}/move`)
+      .patch(`/api/queues/dmv/${ticketId}/move`)
       .send({ direction: "up" });
 
     expect(res.statusCode).toBe(200);
@@ -140,11 +139,11 @@ describe("Queue API", () => {
   });
 
   test("Move user should fail if user not found", async () => {
+    // Action: Try to move a ticket ID that is completely made up
     const res = await request(app)
-      .put("/api/queues/dmv/FAKE999/move")
+      .patch("/api/queues/dmv/FAKE999/move")
       .send({ direction: "down" });
 
-    // This hits the "User not found" error on line 109
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe("User not found");
   });
