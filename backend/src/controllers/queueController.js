@@ -1,5 +1,6 @@
 // import data from serviceController
 const { serviceConfig } = require('./serviceController');
+const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 
 // fake queues to test
 // ticketId legend: D = dmv, B = bank, A = advising, P = placeholder
@@ -72,6 +73,11 @@ const serveNextUser = (req, res) => {
 
     // "serves" first user by removing them from queue array
     const servedUser = queues[serviceId].shift();
+
+    // notify the next users in line that they are close to being served
+    const queue = queues[serviceId];
+    if (queue[0]) triggerNearFrontNotification(queue[0].ticketId, queue[0].name, serviceId, 1);
+    if (queue[1]) triggerNearFrontNotification(queue[1].ticketId, queue[1].name, serviceId, 2);
 
     // return success and info about served user
     res.json({
@@ -151,6 +157,9 @@ const joinQueue = (req, res) => {
 
     queues[serviceId].push(newUser);
 
+    // notify the user that they have joined the queue
+    triggerJoinNotification(ticketId, name, serviceId);
+
     res.json({
     ticketId: newUser.ticketId,
     name: newUser.name,
@@ -158,4 +167,15 @@ const joinQueue = (req, res) => {
     });
 };
 
-module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue };
+// used by tests to reset queue state between runs
+const resetQueues = () => {
+    for (const key in queues) {
+        delete queues[key];
+    }
+    queues.dmv = [];
+    queues.bank = [];
+    queues.advising = [];
+    queues.placeholder = [];
+};
+
+module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues };
