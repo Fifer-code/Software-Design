@@ -151,11 +151,11 @@ function ServiceManagement() {
                 <h2>Service Management</h2>
                 <div className="admin-card-container">                   
                     <div className="admin-card-1">
-                        <h1>Create Service</h1>
-                        <p>Create Brand New Custom Services</p>
+                        <h1>Create Queue</h1>
+                        <p>Create Brand New Custom Queue</p>
                         <form className="admin-create-form" onSubmit={handleCreate}>
                             <div className="form-group">
-                                <label>Service Name:</label>
+                                <label>Queue Name:</label>
                                 <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
                             </div>
                             <div className="form-group">
@@ -180,8 +180,8 @@ function ServiceManagement() {
                     </div>
 
                     <div className="admin-card-2">
-                        <h1>Edit Service</h1>
-                        <p>Modify Existing Services</p>
+                        <h1>Edit Queue</h1>
+                        <p>Modify Existing Queue</p>
                         {services ? (
                             <>
                                 {/* creates new cards depending on how many there are */}
