@@ -42,6 +42,10 @@ app.use('/api/services', serviceRoutes);
 const feedbackRoutes = require('./src/routes/feedback');
 app.use('/api/feedback', feedbackRoutes);
 
+// connect notification routes
+const notificationRoutes = require('./src/routes/notificationRoutes');
+app.use('/api/notifications', notificationRoutes);
+
 
 
 // listen to requests, output if server started
