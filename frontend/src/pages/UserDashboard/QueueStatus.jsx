@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
@@ -11,6 +11,9 @@ function QueueStatus() {
   const [ticket, setTicket] = useState(null);
   const [position, setPosition] = useState(null);
   const [queueLength, setQueueLength] = useState(0);
+
+  // tracks which backend notification IDs have already been shown as toasts
+  const seenNotifIds = useRef(new Set());
 
   useEffect(() => {
     const stored = localStorage.getItem("currentTicket");
@@ -35,27 +38,37 @@ function QueueStatus() {
         setPosition(index === -1 ? null : index + 1);
         setQueueLength(serviceQueue.length);
 
-        if (newPosition != null) {
-        if (newPosition === 1) {
-          addNotification(
-            "You're next in line! Please be ready.",
-            "warning"
-          );
-        } else {
-          addNotification(
-            `Queue update: You moved to position ${newPosition}.`,
-            "info"
-          );
-        }
+      } catch (err) {
+        console.error(err);
       }
-      
+    };
+
+    // poll backend notifications and show any unseen ones as toasts
+    const fetchNotifications = async (ticketId) => {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/notifications/${ticketId}`);
+        const notifications = res.data.notifications || [];
+        notifications.forEach((notif) => {
+          if (!seenNotifIds.current.has(notif.id)) {
+            seenNotifIds.current.add(notif.id);
+            if (notif.type === "near_front") {
+              addNotification(notif.message, "warning");
+            } else if (notif.type === "joined") {
+              addNotification(notif.message, "success");
+            }
+          }
+        });
       } catch (err) {
         console.error(err);
       }
     };
 
     fetchQueue();
-    const interval = setInterval(fetchQueue, 5000);
+    fetchNotifications(ticket.ticketId);
+    const interval = setInterval(() => {
+      fetchQueue();
+      fetchNotifications(ticket.ticketId);
+    }, 5000);
     return () => clearInterval(interval);
   }, [ticket]);
 
