@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const cors = require("cors");       // used npm i cors
 const authRoutes = require('./src/routes/authRoutes.js');
+const connectDB = require('./src/config/db.js');
 
 const corsOptions = {
     origin: ["http://localhost:5173"]
@@ -12,6 +13,11 @@ const corsOptions = {
 // gemini fix : Add this line to actively apply the CORS middleware to your app
 app.use(cors(corsOptions));
 app.use(express.json());  // Parse JSON request bodies
+
+connectDB().catch((error) => {
+    console.error('MongoDB connection failed:', error.message);
+    process.exit(1);
+});
 
 // Routes
 app.use('/auth', authRoutes);

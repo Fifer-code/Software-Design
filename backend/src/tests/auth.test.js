@@ -1,40 +1,28 @@
 const request = require("supertest");
 const express = require("express");
 const authRoutes = require("../routes/authRoutes");
-const users = require("../models/users");
+const UserCredentials = require("../models/userCredentials");
+const UserProfile = require("../models/userProfile");
+const bcrypt = require("bcryptjs");
+
+jest.mock("../models/userCredentials");
+jest.mock("../models/userProfile");
+jest.mock("bcryptjs");
 
 const app = express();
 app.use(express.json());
-app.use("/api/auth", authRoutes);
-
-const seedUsers = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    password: "testpass",
-    role: "user"
-  },
-  {
-    id: 2,
-    firstName: "Admin",
-    lastName: "Test",
-    email: "admin@example.com",
-    password: "adminpass",
-    role: "admin"
-  }
-];
+app.use("/auth", authRoutes);
 
 beforeEach(() => {
-  users.length = 0;
-  users.push(...seedUsers.map((user) => ({ ...user })));
+  jest.clearAllMocks();
+  bcrypt.hash.mockResolvedValue("hashed-password");
+  bcrypt.compare.mockResolvedValue(true);
 });
 
 describe("Auth API", () => {
-  describe("POST /api/auth/register", () => {
+  describe("POST /auth/register", () => {
     test("rejects when required fields are missing", async () => {
-      const res = await request(app).post("/api/auth/register").send({
+      const res = await request(app).post("/auth/register").send({
         firstName: "Jane",
         email: "jane@example.com",
         password: "secret123"
@@ -45,7 +33,7 @@ describe("Auth API", () => {
     });
 
     test("rejects invalid email format", async () => {
-      const res = await request(app).post("/api/auth/register").send({
+      const res = await request(app).post("/auth/register").send({
         firstName: "Jane",
         lastName: "Smith",
         email: "not-an-email",
@@ -57,7 +45,7 @@ describe("Auth API", () => {
     });
 
     test("rejects passwords shorter than 6 characters", async () => {
-      const res = await request(app).post("/api/auth/register").send({
+      const res = await request(app).post("/auth/register").send({
         firstName: "Jane",
         lastName: "Smith",
         email: "jane@example.com",
@@ -69,7 +57,9 @@ describe("Auth API", () => {
     });
 
     test("rejects duplicate emails", async () => {
-      const res = await request(app).post("/api/auth/register").send({
+      UserCredentials.findOne.mockResolvedValue({ _id: "existing-id" });
+
+      const res = await request(app).post("/auth/register").send({
         firstName: "Jane",
         lastName: "Smith",
         email: "john.doe@example.com",
@@ -81,6 +71,14 @@ describe("Auth API", () => {
     });
 
     test("registers a new user and assigns default role", async () => {
+      UserCredentials.findOne.mockResolvedValue(null);
+      UserCredentials.create.mockResolvedValue({
+        _id: "user-id-3",
+        email: "jane.smith@example.com",
+        role: "user"
+      });
+      UserProfile.create.mockResolvedValue({});
+
       const payload = {
         firstName: "Jane",
         lastName: "Smith",
@@ -88,25 +86,35 @@ describe("Auth API", () => {
         password: "secret123"
       };
 
-      const res = await request(app).post("/api/auth/register").send(payload);
+      const res = await request(app).post("/auth/register").send(payload);
 
       expect(res.statusCode).toBe(201);
       expect(res.body.message).toBe("User registered");
       expect(res.body.user).toEqual({
-        id: 3,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
+        id: "user-id-3",
+        fullName: "Jane Smith",
         email: payload.email,
-        password: payload.password,
         role: "user"
       });
-      expect(users).toHaveLength(3);
+      expect(bcrypt.hash).toHaveBeenCalledWith(payload.password, 10);
+      expect(UserCredentials.create).toHaveBeenCalledWith({
+        email: payload.email,
+        passwordHash: "hashed-password",
+        role: "user"
+      });
+      expect(UserProfile.create).toHaveBeenCalledWith({
+        credentialId: "user-id-3",
+        fullName: "Jane Smith",
+        email: payload.email,
+        contactInfo: "",
+        preferences: {}
+      });
     });
   });
 
-  describe("POST /api/auth/login", () => {
+  describe("POST /auth/login", () => {
     test("requires both email and password", async () => {
-      const res = await request(app).post("/api/auth/login").send({
+      const res = await request(app).post("/auth/login").send({
         email: "john.doe@example.com"
       });
 
@@ -115,7 +123,9 @@ describe("Auth API", () => {
     });
 
     test("rejects invalid credentials", async () => {
-      const res = await request(app).post("/api/auth/login").send({
+      UserCredentials.findOne.mockResolvedValue(null);
+
+      const res = await request(app).post("/auth/login").send({
         email: "john.doe@example.com",
         password: "wrongpass"
       });
@@ -125,7 +135,13 @@ describe("Auth API", () => {
     });
 
     test("logs in with valid credentials and returns role", async () => {
-      const res = await request(app).post("/api/auth/login").send({
+      UserCredentials.findOne.mockResolvedValue({
+        email: "admin@example.com",
+        passwordHash: "hashed-admin-password",
+        role: "admin"
+      });
+
+      const res = await request(app).post("/auth/login").send({
         email: "admin@example.com",
         password: "adminpass"
       });
@@ -135,6 +151,7 @@ describe("Auth API", () => {
         message: "Login successful",
         role: "admin"
       });
+      expect(bcrypt.compare).toHaveBeenCalledWith("adminpass", "hashed-admin-password");
     });
   });
 });
