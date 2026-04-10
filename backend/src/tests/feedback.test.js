@@ -2,13 +2,24 @@ const request = require("supertest");
 const express = require("express");
 const feedbackRoutes = require("../routes/feedbackRoutes");
 
+jest.mock("../models/feedback");
+
+const Feedback = require("../models/feedback");
+
 const app = express();
 app.use(express.json());
 app.use("/api/feedback", feedbackRoutes);
 
-describe("Feedback API", () => {
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
+describe("Feedback API", () => {
   test("should submit feedback", async () => {
+    Feedback.create.mockResolvedValue({
+      rating: 5,
+      comment: "Great service!"
+    });
 
     const res = await request(app)
       .post("/api/feedback")
@@ -20,16 +31,20 @@ describe("Feedback API", () => {
     expect(res.statusCode).toBe(201);
     expect(res.body.rating).toBe(5);
     expect(res.body.comment).toBe("Great service!");
+    expect(Feedback.create).toHaveBeenCalled();
   });
 
-test("should reject invalid rating", async () => {
-  const res = await request(app)
-    .post("/api/feedback")
-    .send({ rating: 10 });
+  test("should reject invalid rating", async () => {
+    Feedback.create.mockRejectedValue(
+      new Error("Feedback validation failed")
+    );
 
-  expect(res.statusCode).toBe(400);
-  expect(typeof res.body.error).toBe("string");
-  expect(res.body.error.length).toBeGreaterThan(0);
-});
+    const res = await request(app)
+      .post("/api/feedback")
+      .send({ rating: 10 });
 
+    expect(res.statusCode).toBe(400);
+    expect(typeof res.body.error).toBe("string");
+    expect(res.body.error.length).toBeGreaterThan(0);
+  });
 });
