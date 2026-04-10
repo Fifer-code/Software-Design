@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const { getAllNotifications, getNotificationsByTicket } = require('../controllers/notificationController');
+const { getAllNotifications, getNotificationsByTicket, markAsViewed } = require('../controllers/notificationController');
 
-// get all notifications (useful for admin or debugging)
+// get all notifications
 router.get('/', getAllNotifications);
 
-// get notifications for a specific ticket (for the user to poll)
+// get notifications for a specific ticket
 router.get('/:ticketId', getNotificationsByTicket);
+
+// mark a notification as viewed
+router.patch('/:id/viewed', markAsViewed);
 
 module.exports = router;
