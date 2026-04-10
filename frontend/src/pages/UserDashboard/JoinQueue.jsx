@@ -22,12 +22,8 @@ useEffect(() => {
   const fetchServices = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/services");
-      setServices(
-  Object.entries(res.data.services || {}).map(([id, value]) => ({
-    id,
-    ...value
-  }))
-);
+      const arr = res.data?.services;
+      setServices(Array.isArray(arr) ? arr : []);
     } catch (err) {
       console.error(err);
       setServices([]);

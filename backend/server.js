@@ -49,7 +49,7 @@ const serviceRoutes = require('./src/routes/serviceRoutes');
 app.use('/api/services', serviceRoutes);
 
 // connect feedback routes
-const feedbackRoutes = require('./src/routes/feedback');
+const feedbackRoutes = require('./src/routes/feedbackRoutes');
 app.use('/api/feedback', feedbackRoutes);
 
 // connect notification routes

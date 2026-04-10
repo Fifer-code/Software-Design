@@ -40,8 +40,10 @@ const handleSubmit = async () => {
     setSubmitted(true);
 
   } catch (error) {
-    addNotification("Failed to submit feedback", "error");
-  }
+  console.error("Feedback submit error:", error);
+  console.log("Response data:", error.response?.data);
+  addNotification("Failed to submit feedback", "error");
+}
 };
 
   if (submitted) {
