@@ -3,7 +3,6 @@ const Queue = require('../models/queue');
 const QueueEntry = require('../models/queueEntry');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 const { recordJoin, recordServed, recordRemoved } = require('./historyController');
-const QueueEntry = require('../models/queueEntry');
 
 // time for entire queue mainly for admin purposes
 const getWaitTime = async (req, res) => {
