@@ -142,42 +142,55 @@ const removeUser = (req, res) => {
     res.json({ success: true, message: "User removed" });
 };
 
-const joinQueue = (req, res) => {
+const joinQueue = async (req, res) => {
+  try {
     const { serviceId } = req.params;
     const { name } = req.body;
 
-    if (!name || typeof name !== 'string') {
-        return res.status(400).json({ success: false, message: "Invalid name" });
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ success: false, message: "Invalid name" });
     }
 
-    // FIX: If the queue doesn't exist, but the service IS in the config, initialize it.
-    if (!queues[serviceId] && serviceConfig[serviceId]) {
-        queues[serviceId] = [];
-    } else if (!queues[serviceId]) {
-        // Only throw a 404 if the service truly doesn't exist anywhere
-        return res.status(404).json({ success: false, message: "Service not found" });
+    if (!serviceConfig[serviceId]) {
+      return res.status(404).json({ success: false, message: "Service not found" });
     }
+
+    const waitingCount = await QueueEntry.countDocuments({
+      queueId: serviceId,
+      status: 'waiting'
+    });
 
     // generate ticket ID
     const prefix = serviceId.charAt(0).toUpperCase();
-    const ticketNumber = queues[serviceId].length + 1;
+    const ticketNumber = waitingCount + 1;
     const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
 
-    const newUser = { ticketId, name };
-
-    queues[serviceId].push(newUser);
+    const newEntry = await QueueEntry.create({
+      queueId: serviceId,
+      userId: name.trim(),
+      ticketId,
+      name: name.trim(),
+      position: waitingCount + 1,
+      status: 'waiting'
+    });
 
     // notify the user that they have joined the queue
-    triggerJoinNotification(ticketId, name, serviceId);
-
+    triggerJoinNotification(ticketId, name.trim(), serviceId);
     // record join in history
-    recordJoin(ticketId, name, serviceId);
+    recordJoin(ticketId, name.trim(), serviceId);
 
     res.json({
-    ticketId: newUser.ticketId,
-    name: newUser.name,
-    serviceId: serviceId
+      ticketId: newEntry.ticketId,
+      name: newEntry.name,
+      serviceId,
+      status: newEntry.status
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 // used by tests to reset queue state between runs
