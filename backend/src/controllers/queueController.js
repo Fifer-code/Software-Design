@@ -1,159 +1,177 @@
-// import data from serviceController
-const { serviceConfig } = require('./serviceController');
+const Service = require('../models/service');
+const Queue = require('../models/queue');
+const QueueEntry = require('../models/queueEntry');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 const { recordJoin, recordServed, recordRemoved } = require('./historyController');
 
-// fake queues to test
-// ticketId legend: D = dmv, B = bank, A = advising, P = placeholder
-let queues = {
-    dmv: [
-        { ticketId: "D001", name: "user 1" },
-        { ticketId: "D002", name: "user 2" },
-        { ticketId: "D003", name: "user 3" }
-    ],
-
-    bank: [
-        { ticketId: "B001", name: "user 1" },
-        { ticketId: "B002", name: "user 2" },
-        { ticketId: "B003", name: "user 3" }
-    ],
-
-    advising: [
-        { ticketId: "A001", name: "user 1" },
-        { ticketId: "A002", name: "user 2" },
-        { ticketId: "A003", name: "user 3" }
-    ],
-
-    placeholder: [
-        { ticketId: "P001", name: "user 1" },
-        { ticketId: "P002", name: "user 2" },
-        { ticketId: "P003", name: "user 3" }
-    ]
-};
-
 // time for entire queue mainly for admin purposes
-const getWaitTime = (req, res) => {
-    res.json({
-        success: true,
-        dmvWaitTime: queues.dmv.length * (serviceConfig.dmv?.duration || 0),
-        bankWaitTime: queues.bank.length * (serviceConfig.bank?.duration || 0),
-        advisingWaitTime: queues.advising.length * (serviceConfig.advising?.duration || 0),
-        placeholderWaitTime: queues.placeholder.length * (serviceConfig.placeholder?.duration || 0),
-    });
+const getWaitTime = async (req, res) => {
+    try {
+        const services = await Service.find();
+        const waitTimes = {};
+
+        // loop through each service and count how many people are waiting
+        for (const service of services) {
+            const count = await QueueEntry.countDocuments({ queueId: service.serviceId, status: 'waiting' });
+            waitTimes[`${service.serviceId}WaitTime`] = count * service.duration;
+        }
+
+        res.json({ success: true, ...waitTimes });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
 
 // get all queues
-const getQueueList = (req, res) => {
-    // FIX: Before sending the queues, loop through your service configs.
-    // If a service exists but doesn't have a queue array yet, create an empty one!
-    for (const id in serviceConfig) {
-        if (!queues[id]) {
-            queues[id] = [];
-        }
-    }
+const getQueueList = async (req, res) => {
+    try {
+        // get all waiting entries from db sorted by position
+        const entries = await QueueEntry.find({ status: 'waiting' }).sort({ position: 1 });
 
-    res.json({
-        success: true,
-        queues
-    });
+        // group entries by service id to match the same format the frontend expects
+        const queues = {};
+        for (const entry of entries) {
+            if (!queues[entry.queueId]) queues[entry.queueId] = [];
+            queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name });
+        }
+
+        res.json({ success: true, queues });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
 
 // logic for serve next user button in QueueManagement
-const serveNextUser = (req, res) => {
-    const { serviceId } = req.params;       // assinged serviceID to each service
+const serveNextUser = async (req, res) => {
+    try {
+        const { serviceId } = req.params;       // assigned serviceID to each service
 
-    // check if the service even exists
-    if (!queues[serviceId]) {
-        return res.status(404).json({ success: false, message: "Service queue not found" });
+        // check if the service even exists
+        const service = await Service.findOne({ serviceId });
+        if (!service) {
+            return res.status(404).json({ success: false, message: "Service queue not found" });
+        }
+
+        // find the first waiting user and mark them as served
+        const servedUser = await QueueEntry.findOneAndUpdate(
+            { queueId: serviceId, status: 'waiting' },
+            { status: 'served' },
+            { sort: { position: 1 }, new: false }
+        );
+
+        // check if queue is already empty
+        if (!servedUser) {
+            return res.status(400).json({ success: false, message: "Queue is already empty" });
+        }
+
+        // record served user in history
+        recordServed(servedUser.ticketId, servedUser.name, serviceId);
+
+        // notify the next users in line that they are close to being served
+        const remaining = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1 });
+        if (remaining[0]) triggerNearFrontNotification(remaining[0].ticketId, remaining[0].name, serviceId, 1);
+        if (remaining[1]) triggerNearFrontNotification(remaining[1].ticketId, remaining[1].name, serviceId, 2);
+
+        // return success and info about served user
+        res.json({
+            success: true,
+            message: `Now serving: ${servedUser.name}`,
+            servedUser: { ticketId: servedUser.ticketId, name: servedUser.name },
+            updatedQueue: remaining.map(e => ({ ticketId: e.ticketId, name: e.name }))
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    // check if service has a queue
-    if (queues[serviceId].length === 0) {
-        return res.status(400).json({ success: false, message: "Queue is already empty" });
-    }
-
-    // "serves" first user by removing them from queue array
-    const servedUser = queues[serviceId].shift();
-
-    // record served user in history
-    recordServed(servedUser.ticketId, servedUser.name, serviceId);
-
-    // notify the next users in line that they are close to being served
-    const queue = queues[serviceId];
-    if (queue[0]) triggerNearFrontNotification(queue[0].ticketId, queue[0].name, serviceId, 1);
-    if (queue[1]) triggerNearFrontNotification(queue[1].ticketId, queue[1].name, serviceId, 2);
-
-    // return success and info about served user
-    res.json({
-        success: true,
-        message: `Now serving: ${servedUser.name}`,
-        servedUser,
-        updatedQueue: queues[serviceId]
-    });
 };
 
 // logic for both move up and move down buttons in QueueManagement
-const moveUser = (req, res) => {
-    const { serviceId, ticketId } = req.params;     // assinged serviceID and ticketID to each service and user respectively
-    const { direction } = req.body;     // direction for move up and down
-    const queue = queues[serviceId];
+const moveUser = async (req, res) => {
+    try {
+        const { serviceId, ticketId } = req.params;     // assigned serviceID and ticketID to each service and user
+        const { direction } = req.body;     // direction for move up and down
 
-    // checks if there is a queue
-    if (!queue){
-        return res.status(404).json({ message: "Queue not found" });
+        // checks if there is a valid queue
+        const service = await Service.findOne({ serviceId });
+        if (!service) {
+            return res.status(404).json({ message: "Queue not found" });
+        }
+
+        // checks if there is a user to move
+        const user = await QueueEntry.findOne({ queueId: serviceId, ticketId, status: 'waiting' });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // find the adjacent user based on direction then swap positions
+        let adjacent;
+        if (direction === 'up') {
+            adjacent = await QueueEntry.findOne({ queueId: serviceId, status: 'waiting', position: user.position - 1 });
+        } else if (direction === 'down') {
+            adjacent = await QueueEntry.findOne({ queueId: serviceId, status: 'waiting', position: user.position + 1 });
+        }
+
+        // swap logic
+        if (adjacent) {
+            const tempPos = user.position;
+            await QueueEntry.findByIdAndUpdate(user._id, { position: adjacent.position });
+            await QueueEntry.findByIdAndUpdate(adjacent._id, { position: tempPos });
+        }
+
+        // return success and info about modified queue
+        const updatedQueue = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1 });
+        res.json({
+            success: true,
+            message: "Queue reordered",
+            updatedQueue: updatedQueue.map(e => ({ ticketId: e.ticketId, name: e.name }))
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    // checks if there is a user to move
-    const index = queue.findIndex(u => u.ticketId === ticketId);
-    if (index === -1){
-        return res.status(404).json({ message: "User not found" });
-    }
-
-    // swap logic
-    if (direction === 'up' && index > 0) {
-        [queue[index], queue[index - 1]] = [queue[index - 1], queue[index]];
-    } else if (direction === 'down' && index < queue.length - 1) {
-        [queue[index], queue[index + 1]] = [queue[index + 1], queue[index]];
-    }
-
-    // return success and info about modified queue
-    res.json({ success: true, message: "Queue reordered", updatedQueue: queue });
 };
 
-// logic to for remove user button in QueueManagement
-const removeUser = (req, res) => {
-    const { serviceId, ticketId } = req.params;     // assinged serviceID and ticketID to each service and user respectively
-    
-    // checks if there is even a queue
-    if (!queues[serviceId]){
-        return res.status(404).json({ message: "Queue not found" });
+// logic for remove user button in QueueManagement
+const removeUser = async (req, res) => {
+    try {
+        const { serviceId, ticketId } = req.params;     // assigned serviceID and ticketID to each service and user
+
+        // checks if there is even a queue
+        const service = await Service.findOne({ serviceId });
+        if (!service) {
+            return res.status(404).json({ message: "Queue not found" });
+        }
+
+        // find user before removing so we can record their name in history
+        const entry = await QueueEntry.findOneAndUpdate(
+            { queueId: serviceId, ticketId, status: 'waiting' },
+            { status: 'canceled' },
+            { new: false }
+        );
+
+        // record removal in history if user was found
+        if (entry) recordRemoved(ticketId, entry.name, serviceId);
+
+        // return success and info about removed user
+        res.json({ success: true, message: "User removed" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    // find user before removing so we can record their name in history
-    const userToRemove = queues[serviceId].find(u => u.ticketId === ticketId);
-
-    // use filter to creates a new array without the selected user
-    queues[serviceId] = queues[serviceId].filter(u => u.ticketId !== ticketId);
-
-    // record removal in history if user was found
-    if (userToRemove) recordRemoved(ticketId, userToRemove.name, serviceId);
-
-    // return success and info about removed user
-    res.json({ success: true, message: "User removed" });
 };
 
+// logic for join queue button in UserDashboard
 const joinQueue = async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-    const { name } = req.body;
+    try {
+        const { serviceId } = req.params;
+        const { name } = req.body;
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return res.status(400).json({ success: false, message: "Invalid name" });
-    }
+        if (!name || typeof name !== 'string' || !name.trim()) {
+            return res.status(400).json({ success: false, message: "Invalid name" });
+        }
 
-    if (!serviceConfig[serviceId]) {
-      return res.status(404).json({ success: false, message: "Service not found" });
-    }
+        // checks if service exists in database
+        const service = await Service.findOne({ serviceId });
+        if (!service) {
+            return res.status(404).json({ success: false, message: "Service not found" });
+        }
 
     const waitingCount = await QueueEntry.countDocuments({
       queueId: serviceId,
@@ -194,14 +212,8 @@ const joinQueue = async (req, res) => {
 };
 
 // used by tests to reset queue state between runs
-const resetQueues = () => {
-    for (const key in queues) {
-        delete queues[key];
-    }
-    queues.dmv = [];
-    queues.bank = [];
-    queues.advising = [];
-    queues.placeholder = [];
+const resetQueues = async () => {
+    await QueueEntry.deleteMany({});
 };
 
 module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues };
