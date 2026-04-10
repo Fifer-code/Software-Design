@@ -47,4 +47,21 @@ describe("Feedback API", () => {
     expect(typeof res.body.error).toBe("string");
     expect(res.body.error.length).toBeGreaterThan(0);
   });
+
+  test("should get all feedback", async () => {
+    Feedback.find.mockReturnValue({
+      sort: jest.fn().mockResolvedValue([
+        { rating: 5, comment: "Great service!" },
+        { rating: 4, comment: "Pretty good" }
+      ])
+    });
+
+    const res = await request(app).get("/api/feedback");
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(2);
+    expect(res.body[0].rating).toBe(5);
+    expect(Feedback.find).toHaveBeenCalled();
+  });
 });
