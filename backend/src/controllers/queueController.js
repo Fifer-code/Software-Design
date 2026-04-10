@@ -160,6 +160,7 @@ const joinQueue = async (req, res) => {
       status: 'waiting'
     });
 
+    // generate ticket ID
     const prefix = serviceId.charAt(0).toUpperCase();
     const ticketNumber = waitingCount + 1;
     const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
@@ -173,7 +174,9 @@ const joinQueue = async (req, res) => {
       status: 'waiting'
     });
 
+    // notify the user that they have joined the queue
     triggerJoinNotification(ticketId, name.trim(), serviceId);
+    // record join in history
     recordJoin(ticketId, name.trim(), serviceId);
 
     res.json({
