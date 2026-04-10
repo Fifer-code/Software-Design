@@ -64,4 +64,15 @@ describe("Feedback API", () => {
     expect(res.body[0].rating).toBe(5);
     expect(Feedback.find).toHaveBeenCalled();
   });
+
+  test("GET /api/feedback returns 500 on error", async () => {
+  Feedback.find.mockReturnValue({
+    sort: jest.fn().mockRejectedValue(new Error("DB error"))
+  });
+
+  const res = await request(app).get("/api/feedback");
+
+  expect(res.statusCode).toBe(500);
+  expect(typeof res.body.error).toBe("string");
+});
 });

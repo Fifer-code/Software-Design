@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1775846166048" clover="3.2.0">
-  <project timestamp="1775846166048" name="All files">
-    <metrics statements="306" coveredstatements="270" conditionals="100" coveredconditionals="79" methods="33" coveredmethods="26" elements="439" coveredelements="375" complexity="0" loc="306" ncloc="306" packages="3" files="19" classes="19"/>
+<coverage generated="1775846959666" clover="3.2.0">
+  <project timestamp="1775846959666" name="All files">
+    <metrics statements="306" coveredstatements="271" conditionals="100" coveredconditionals="79" methods="33" coveredmethods="26" elements="439" coveredelements="376" complexity="0" loc="306" ncloc="306" packages="3" files="19" classes="19"/>
     <package name="controllers">
       <metrics statements="230" coveredstatements="195" conditionals="84" coveredconditionals="63" methods="31" coveredmethods="24"/>
       <file name="authController.js" path="C:\Users\Steven\Documents\Code Stuff\Software Design\Software-Design\backend\src\controllers\authController.js">
@@ -302,7 +302,7 @@
       </file>
     </package>
     <package name="routes">
-      <metrics statements="52" coveredstatements="51" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+      <metrics statements="52" coveredstatements="52" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
       <file name="authRoutes.js" path="C:\Users\Steven\Documents\Code Stuff\Software Design\Software-Design\backend\src\routes\authRoutes.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
@@ -313,7 +313,7 @@
         <line num="9" count="1" type="stmt"/>
       </file>
       <file name="feedbackRoutes.js" path="C:\Users\Steven\Documents\Code Stuff\Software Design\Software-Design\backend\src\routes\feedbackRoutes.js">
-        <metrics statements="15" coveredstatements="14" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <metrics statements="15" coveredstatements="15" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -324,10 +324,10 @@
         <line num="14" count="1" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
         <line num="20" count="1" type="stmt"/>
-        <line num="21" count="1" type="stmt"/>
-        <line num="22" count="1" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
         <line num="23" count="1" type="stmt"/>
-        <line num="25" count="0" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
         <line num="29" count="1" type="stmt"/>
       </file>
       <file name="historyRoutes.js" path="C:\Users\Steven\Documents\Code Stuff\Software Design\Software-Design\backend\src\routes\historyRoutes.js">
