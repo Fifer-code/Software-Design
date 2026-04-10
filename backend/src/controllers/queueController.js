@@ -173,43 +173,42 @@ const joinQueue = async (req, res) => {
             return res.status(404).json({ success: false, message: "Service not found" });
         }
 
-        // checks if the queue is open before letting user join
-        const queue = await Queue.findOne({ serviceId });
-        if (queue && queue.status === 'closed') {
-            return res.status(400).json({ success: false, message: "Queue is closed" });
-        }
+    const waitingCount = await QueueEntry.countDocuments({
+      queueId: serviceId,
+      status: 'waiting'
+    });
 
-        // get current count to figure out position and generate ticket ID
-        const waitingCount = await QueueEntry.countDocuments({ queueId: serviceId, status: 'waiting' });
+    // generate ticket ID
+    const prefix = serviceId.charAt(0).toUpperCase();
+    const ticketNumber = waitingCount + 1;
+    const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
 
-        const prefix = serviceId.charAt(0).toUpperCase();
-        const ticketNumber = waitingCount + 1;
-        const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
+    const newEntry = await QueueEntry.create({
+      queueId: serviceId,
+      userId: name.trim(),
+      ticketId,
+      name: name.trim(),
+      position: waitingCount + 1,
+      status: 'waiting'
+    });
 
-        const newEntry = await QueueEntry.create({
-            queueId: serviceId,
-            userId: name.trim(),
-            ticketId,
-            name: name.trim(),
-            position: waitingCount + 1,
-            status: 'waiting'
-        });
+    // notify the user that they have joined the queue
+    triggerJoinNotification(ticketId, name.trim(), serviceId);
+    // record join in history
+    recordJoin(ticketId, name.trim(), serviceId);
 
-        // notify the user that they joined the queue
-        triggerJoinNotification(ticketId, name.trim(), serviceId);
-
-        // record join in history
-        recordJoin(ticketId, name.trim(), serviceId);
-
-        res.json({
-            ticketId: newEntry.ticketId,
-            name: newEntry.name,
-            serviceId,
-            status: newEntry.status
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
+    res.json({
+      ticketId: newEntry.ticketId,
+      name: newEntry.name,
+      serviceId,
+      status: newEntry.status
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 // used by tests to reset queue state between runs
