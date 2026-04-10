@@ -5,6 +5,7 @@ const app = express();
 const cors = require("cors");       // used npm i cors
 const authRoutes = require('./src/routes/authRoutes.js');
 const connectDB = require('./src/config/db.js');
+const seedDatabase = require('./src/config/seed.js');
 
 const corsOptions = {
     origin: ["http://localhost:5173"]
@@ -14,10 +15,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());  // Parse JSON request bodies
 
-connectDB().catch((error) => {
-    console.error('MongoDB connection failed:', error.message);
-    process.exit(1);
-});
+// connect to database then seed default data if needed
+connectDB()
+    .then(() => seedDatabase())
+    .catch((error) => {
+        console.error('MongoDB connection failed:', error.message);
+        process.exit(1);
+    });
 
 // Routes
 app.use('/auth', authRoutes);

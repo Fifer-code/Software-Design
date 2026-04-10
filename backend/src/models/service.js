@@ -5,18 +5,22 @@ const serviceSchema =  new mongoose.Schema(
         serviceId:{
             type: String,        // string to make id be dmv, banking, or advising
             required: true,
+            maxlength: [50, 'Service ID cannot exceed 50 characters']
         },
         name:{
             type: String,
             required: true,
-            unique: true,       // only allow 1 queue with same name
+            unique: true,       // only allow 1 service with same name
+            maxlength: [100, 'Service name cannot exceed 100 characters']
         },
         description:{
             type: String,
+            maxlength: [300, 'Description cannot exceed 300 characters']
         },
         duration:{
             type: Number,
-            required: true
+            required: true,
+            min: [1, 'Duration must be at least 1 minute']
         },
         priority:{
             type: String,
