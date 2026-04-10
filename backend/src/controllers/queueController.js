@@ -2,6 +2,7 @@
 const { serviceConfig } = require('./serviceController');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 const { recordJoin, recordServed, recordRemoved } = require('./historyController');
+const QueueEntry = require('../models/queueEntry');
 
 // fake queues to test
 // ticketId legend: D = dmv, B = bank, A = advising, P = placeholder

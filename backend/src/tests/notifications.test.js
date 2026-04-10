@@ -1,134 +1,107 @@
 const request = require("supertest");
 const express = require("express");
-const serviceRoutes = require("../routes/serviceRoutes");
-const queueRoutes = require("../routes/queueRoutes");
 const notificationRoutes = require("../routes/notificationRoutes");
-const { resetNotifications } = require("../controllers/notificationController");
-const { resetQueues } = require("../controllers/queueController");
+const Notification = require("../models/notification");
+
+jest.mock("../models/notification");
 
 const app = express();
 app.use(express.json());
-app.use("/api/services", serviceRoutes);
-app.use("/api/queues", queueRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// reset both notifications and queues before each test so state doesn't bleed between tests
 beforeEach(() => {
-    resetNotifications();
-    resetQueues();
+    jest.clearAllMocks();
 });
 
-describe("Notification Module", () => {
+describe("Notification API", () => {
 
-    test("Joining a queue creates a 'joined' notification", async () => {
-        // set up service first
-        await request(app).post("/api/services").send({
-            id: "dmv",
-            name: "DMV",
-            description: "DMV services",
-            duration: 10,
-            priority: "Low"
+    describe("GET /api/notifications", () => {
+        test("returns all notifications", async () => {
+            const mockNotifs = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", type: "joined", message: "Alice joined", status: "sent" },
+                { ticketId: "D002", name: "Bob", serviceId: "dmv", type: "near_front", message: "Bob is near front", status: "sent" }
+            ];
+            Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockNotifs) });
+
+            const res = await request(app).get("/api/notifications");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.notifications).toHaveLength(2);
         });
-
-        const joinRes = await request(app)
-            .post("/api/queues/dmv/join")
-            .send({ name: "Alice" });
-
-        expect(joinRes.statusCode).toBe(200);
-        const ticketId = joinRes.body.ticketId;
-
-        const notifRes = await request(app).get(`/api/notifications/${ticketId}`);
-        expect(notifRes.statusCode).toBe(200);
-        expect(notifRes.body.notifications.length).toBe(1);
-        expect(notifRes.body.notifications[0].type).toBe("joined");
-        expect(notifRes.body.notifications[0].name).toBe("Alice");
-        expect(notifRes.body.notifications[0].serviceId).toBe("dmv");
     });
 
-    test("Serving a user triggers 'near_front' notifications for positions 1 and 2", async () => {
-        await request(app).post("/api/services").send({
-            id: "bank",
-            name: "Bank",
-            description: "Bank services",
-            duration: 10,
-            priority: "Low"
+    describe("GET /api/notifications/:ticketId", () => {
+        test("returns notifications for a specific ticket", async () => {
+            const mockNotifs = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", type: "joined", message: "Alice joined", status: "sent" }
+            ];
+            Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockNotifs) });
+
+            const res = await request(app).get("/api/notifications/D001");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.notifications).toHaveLength(1);
+            expect(res.body.notifications[0].ticketId).toBe("D001");
         });
 
-        // join 3 users so after serving position 0, positions 1 and 2 exist
-        const join1 = await request(app).post("/api/queues/bank/join").send({ name: "User1" });
-        const join2 = await request(app).post("/api/queues/bank/join").send({ name: "User2" });
-        const join3 = await request(app).post("/api/queues/bank/join").send({ name: "User3" });
+        test("returns empty array when no notifications exist for ticket", async () => {
+            Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-        resetNotifications(); // clear join notifications so we only check near_front ones
-
-        await request(app).post("/api/queues/bank/serve");
-
-        const allRes = await request(app).get("/api/notifications");
-        expect(allRes.statusCode).toBe(200);
-
-        const nearFront = allRes.body.notifications.filter(n => n.type === "near_front");
-        expect(nearFront.length).toBe(2);
-        expect(nearFront[0].ticketId).toBe(join2.body.ticketId);  // now position 1
-        expect(nearFront[1].ticketId).toBe(join3.body.ticketId);  // now position 2
+            const res = await request(app).get("/api/notifications/ZZZZ");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.notifications).toHaveLength(0);
+        });
     });
 
-    test("Serving a user with only 1 person left triggers only 1 'near_front' notification", async () => {
-        await request(app).post("/api/services").send({
-            id: "advising",
-            name: "Advising",
-            description: "Advising services",
-            duration: 10,
-            priority: "Low"
+    describe("PATCH /api/notifications/:id/viewed", () => {
+        test("marks a notification as viewed", async () => {
+            const updated = { _id: "abc123", ticketId: "D001", status: "viewed" };
+            Notification.findByIdAndUpdate.mockResolvedValue(updated);
+
+            const res = await request(app).patch("/api/notifications/abc123/viewed");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.notification.status).toBe("viewed");
         });
 
-        const join1 = await request(app).post("/api/queues/advising/join").send({ name: "OnlyUser" });
-        const join2 = await request(app).post("/api/queues/advising/join").send({ name: "SecondUser" });
+        test("returns 404 if notification not found", async () => {
+            Notification.findByIdAndUpdate.mockResolvedValue(null);
 
-        resetNotifications();
-
-        await request(app).post("/api/queues/advising/serve");
-
-        const allRes = await request(app).get("/api/notifications");
-        const nearFront = allRes.body.notifications.filter(n => n.type === "near_front");
-
-        // only 1 person left after serving, so only 1 near_front notification
-        expect(nearFront.length).toBe(1);
-        expect(nearFront[0].ticketId).toBe(join2.body.ticketId);
+            const res = await request(app).patch("/api/notifications/nonexistent/viewed");
+            expect(res.statusCode).toBe(404);
+            expect(res.body.message).toBe("Notification not found");
+        });
     });
 
-    test("GET /api/notifications returns all notifications", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv",
-            name: "DMV",
-            description: "DMV services",
-            duration: 10,
-            priority: "Low"
+    describe("Notification trigger functions", () => {
+        test("triggerJoinNotification creates a joined notification in DB", async () => {
+            const { triggerJoinNotification } = require("../controllers/notificationController");
+            const mockNotif = { ticketId: "D001", name: "Alice", serviceId: "dmv", type: "joined", status: "sent" };
+            Notification.create.mockResolvedValue(mockNotif);
+
+            const result = await triggerJoinNotification("D001", "Alice", "dmv");
+            expect(Notification.create).toHaveBeenCalledWith(expect.objectContaining({
+                ticketId: "D001",
+                name: "Alice",
+                serviceId: "dmv",
+                type: "joined",
+                status: "sent"
+            }));
+            expect(result.type).toBe("joined");
         });
 
-        await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
-        await request(app).post("/api/queues/dmv/join").send({ name: "Bob" });
+        test("triggerNearFrontNotification creates a near_front notification in DB", async () => {
+            const { triggerNearFrontNotification } = require("../controllers/notificationController");
+            const mockNotif = { ticketId: "D002", name: "Bob", serviceId: "dmv", type: "near_front", status: "sent" };
+            Notification.create.mockResolvedValue(mockNotif);
 
-        const res = await request(app).get("/api/notifications");
-        expect(res.statusCode).toBe(200);
-        expect(res.body.notifications.length).toBe(2);
-    });
-
-    test("GET /api/notifications/:ticketId returns only that user's notifications", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv",
-            name: "DMV",
-            description: "DMV services",
-            duration: 10,
-            priority: "Low"
+            const result = await triggerNearFrontNotification("D002", "Bob", "dmv", 1);
+            expect(Notification.create).toHaveBeenCalledWith(expect.objectContaining({
+                ticketId: "D002",
+                type: "near_front",
+                status: "sent"
+            }));
+            expect(result.type).toBe("near_front");
         });
-
-        const join1 = await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
-        await request(app).post("/api/queues/dmv/join").send({ name: "Bob" });
-
-        const res = await request(app).get(`/api/notifications/${join1.body.ticketId}`);
-        expect(res.statusCode).toBe(200);
-        expect(res.body.notifications.length).toBe(1);
-        expect(res.body.notifications[0].name).toBe("Alice");
     });
 
 });

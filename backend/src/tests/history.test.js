@@ -1,135 +1,111 @@
 const request = require("supertest");
 const express = require("express");
-const serviceRoutes = require("../routes/serviceRoutes");
-const queueRoutes = require("../routes/queueRoutes");
 const historyRoutes = require("../routes/historyRoutes");
-const { resetHistory } = require("../controllers/historyController");
-const { resetQueues } = require("../controllers/queueController");
+const History = require("../models/history");
+
+jest.mock("../models/history");
 
 const app = express();
 app.use(express.json());
-app.use("/api/services", serviceRoutes);
-app.use("/api/queues", queueRoutes);
 app.use("/api/history", historyRoutes);
 
-// reset both history and queues before each test so state doesn't bleed between tests
 beforeEach(() => {
-    resetHistory();
-    resetQueues();
+    jest.clearAllMocks();
 });
 
-describe("History Module", () => {
+describe("History API", () => {
 
-    test("Joining a queue creates a 'joined' history entry", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv", name: "DMV", description: "DMV services", duration: 10, priority: "Low"
+    describe("GET /api/history", () => {
+        test("returns all history entries", async () => {
+            const mockHistory = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "joined", message: "Alice joined" },
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "served", message: "Alice was served" }
+            ];
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
+
+            const res = await request(app).get("/api/history");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.history).toHaveLength(2);
         });
-
-        const joinRes = await request(app)
-            .post("/api/queues/dmv/join")
-            .send({ name: "Alice" });
-
-        expect(joinRes.statusCode).toBe(200);
-        const ticketId = joinRes.body.ticketId;
-
-        const histRes = await request(app).get(`/api/history/${ticketId}`);
-        expect(histRes.statusCode).toBe(200);
-        expect(histRes.body.history.length).toBe(1);
-        expect(histRes.body.history[0].event).toBe("joined");
-        expect(histRes.body.history[0].name).toBe("Alice");
-        expect(histRes.body.history[0].serviceId).toBe("dmv");
     });
 
-    test("Serving a user creates a 'served' history entry", async () => {
-        await request(app).post("/api/services").send({
-            id: "bank", name: "Bank", description: "Bank services", duration: 10, priority: "Low"
+    describe("GET /api/history/:ticketId", () => {
+        test("returns history for a specific ticket", async () => {
+            const mockHistory = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "joined", message: "Alice joined" }
+            ];
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
+
+            const res = await request(app).get("/api/history/D001");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.history).toHaveLength(1);
+            expect(res.body.history[0].ticketId).toBe("D001");
         });
 
-        const joinRes = await request(app)
-            .post("/api/queues/bank/join")
-            .send({ name: "Bob" });
+        test("returns empty array when no history exists for ticket", async () => {
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-        const ticketId = joinRes.body.ticketId;
-        resetHistory(); // clear join entry so we only check served entry
-
-        await request(app).post("/api/queues/bank/serve");
-
-        const histRes = await request(app).get(`/api/history/${ticketId}`);
-        expect(histRes.statusCode).toBe(200);
-        expect(histRes.body.history.length).toBe(1);
-        expect(histRes.body.history[0].event).toBe("served");
-        expect(histRes.body.history[0].name).toBe("Bob");
+            const res = await request(app).get("/api/history/ZZZZ");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.history).toHaveLength(0);
+        });
     });
 
-    test("Removing a user creates a 'removed' history entry", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv", name: "DMV", description: "DMV services", duration: 10, priority: "Low"
+    describe("GET /api/history/service/:serviceId", () => {
+        test("returns history for a specific service", async () => {
+            const mockHistory = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "joined" },
+                { ticketId: "D002", name: "Bob", serviceId: "dmv", event: "served" }
+            ];
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
+
+            const res = await request(app).get("/api/history/service/dmv");
+            expect(res.statusCode).toBe(200);
+            expect(res.body.history).toHaveLength(2);
+            expect(res.body.history[0].serviceId).toBe("dmv");
         });
-
-        const joinRes = await request(app)
-            .post("/api/queues/dmv/join")
-            .send({ name: "Charlie" });
-
-        const ticketId = joinRes.body.ticketId;
-        resetHistory();
-
-        await request(app).delete(`/api/queues/dmv/${ticketId}`);
-
-        const histRes = await request(app).get(`/api/history/${ticketId}`);
-        expect(histRes.statusCode).toBe(200);
-        expect(histRes.body.history.length).toBe(1);
-        expect(histRes.body.history[0].event).toBe("removed");
-        expect(histRes.body.history[0].name).toBe("Charlie");
     });
 
-    test("GET /api/history returns all entries", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv", name: "DMV", description: "DMV services", duration: 10, priority: "Low"
+    describe("History trigger functions", () => {
+        test("recordJoin creates a joined history entry in DB", async () => {
+            const { recordJoin } = require("../controllers/historyController");
+            const mockEntry = { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "joined" };
+            History.create.mockResolvedValue(mockEntry);
+
+            const result = await recordJoin("D001", "Alice", "dmv");
+            expect(History.create).toHaveBeenCalledWith(expect.objectContaining({
+                ticketId: "D001",
+                name: "Alice",
+                serviceId: "dmv",
+                event: "joined"
+            }));
+            expect(result.event).toBe("joined");
         });
 
-        await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
-        await request(app).post("/api/queues/dmv/join").send({ name: "Bob" });
+        test("recordServed creates a served history entry in DB", async () => {
+            const { recordServed } = require("../controllers/historyController");
+            const mockEntry = { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "served" };
+            History.create.mockResolvedValue(mockEntry);
 
-        const histRes = await request(app).get("/api/history");
-        expect(histRes.statusCode).toBe(200);
-        expect(histRes.body.history.length).toBe(2);
-    });
-
-    test("GET /api/history/service/:serviceId returns only that service's entries", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv", name: "DMV", description: "DMV services", duration: 10, priority: "Low"
-        });
-        await request(app).post("/api/services").send({
-            id: "bank", name: "Bank", description: "Bank services", duration: 10, priority: "Low"
+            const result = await recordServed("D001", "Alice", "dmv");
+            expect(History.create).toHaveBeenCalledWith(expect.objectContaining({
+                event: "served"
+            }));
+            expect(result.event).toBe("served");
         });
 
-        await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
-        await request(app).post("/api/queues/bank/join").send({ name: "Bob" });
+        test("recordRemoved creates a removed history entry in DB", async () => {
+            const { recordRemoved } = require("../controllers/historyController");
+            const mockEntry = { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "removed" };
+            History.create.mockResolvedValue(mockEntry);
 
-        const histRes = await request(app).get("/api/history/service/dmv");
-        expect(histRes.statusCode).toBe(200);
-        expect(histRes.body.history.length).toBe(1);
-        expect(histRes.body.history[0].serviceId).toBe("dmv");
-        expect(histRes.body.history[0].name).toBe("Alice");
-    });
-
-    test("A ticket has both joined and served entries across its full history", async () => {
-        await request(app).post("/api/services").send({
-            id: "dmv", name: "DMV", description: "DMV services", duration: 10, priority: "Low"
+            const result = await recordRemoved("D001", "Alice", "dmv");
+            expect(History.create).toHaveBeenCalledWith(expect.objectContaining({
+                event: "removed"
+            }));
+            expect(result.event).toBe("removed");
         });
-
-        const joinRes = await request(app)
-            .post("/api/queues/dmv/join")
-            .send({ name: "Alice" });
-
-        const ticketId = joinRes.body.ticketId;
-
-        await request(app).post("/api/queues/dmv/serve");
-
-        const histRes = await request(app).get(`/api/history/${ticketId}`);
-        expect(histRes.body.history.length).toBe(2);
-        expect(histRes.body.history[0].event).toBe("joined");
-        expect(histRes.body.history[1].event).toBe("served");
     });
 
 });
