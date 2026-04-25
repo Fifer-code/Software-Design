@@ -5,8 +5,10 @@ import axios from "axios";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NotificationProvider } from "./context/NotificationContext";
 import NotificationToast from "./components/NotificationToast";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Unauthorized from "./pages/Unauthorized";
 
 /* admin routes */
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -41,21 +43,29 @@ function App() {
       <BrowserRouter>
         <NotificationToast />
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* user routes */}
-          <Route path="/user" element={<UserSidebar />}>
-            <Route path="dashboard" element={<UserDashboard />} />
-            <Route path="join" element={<JoinQueue />} />
-            <Route path="status" element={<QueueStatus />} />
-            <Route path="history" element={<History />} />
-            <Route path="feedback" element={<Feedback />} />
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Route>
 
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/servicemanagement" element={<ServiceManagement />} />
-          <Route path="/admin/queuemanagement" element={<QueueManagement />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* user routes */}
+          <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+            <Route path="/user" element={<UserSidebar />}>
+              <Route path="dashboard" element={<UserDashboard />} />
+              <Route path="join" element={<JoinQueue />} />
+              <Route path="status" element={<QueueStatus />} />
+              <Route path="history" element={<History />} />
+              <Route path="feedback" element={<Feedback />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/servicemanagement" element={<ServiceManagement />} />
+            <Route path="/admin/queuemanagement" element={<QueueManagement />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </NotificationProvider>

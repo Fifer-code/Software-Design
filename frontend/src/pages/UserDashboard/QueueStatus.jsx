@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
 import "/src/userdashboard.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 function QueueStatus() {
   const navigate = useNavigate();
@@ -27,7 +28,9 @@ function QueueStatus() {
 
     const fetchQueue = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/queues");
+        const res = await axios.get("http://localhost:8080/api/queues", {
+          headers: getAuthHeaders()
+        });
         const queues = res.data.queues || {};
         const serviceQueue = queues[ticket.serviceId] || [];
 
@@ -46,7 +49,9 @@ function QueueStatus() {
     // poll backend notifications and show any unseen ones as toasts
     const fetchNotifications = async (ticketId) => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/notifications/${ticketId}`);
+        const res = await axios.get(`http://localhost:8080/api/notifications/${ticketId}`, {
+          headers: getAuthHeaders()
+        });
         const notifications = res.data.notifications || [];
         notifications.forEach((notif) => {
           if (!seenNotifIds.current.has(notif.id)) {
@@ -75,7 +80,10 @@ function QueueStatus() {
   const handleLeave = async () => {
     try {
       await axios.delete(
-        `http://localhost:8080/api/queues/${ticket.serviceId}/${ticket.ticketId}`
+        `http://localhost:8080/api/queues/${ticket.serviceId}/${ticket.ticketId}`,
+        {
+          headers: getAuthHeaders()
+        }
       );
 
       const historyItem = {

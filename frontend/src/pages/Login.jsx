@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./auth.css";
+import { clearAuthSession, setAuthSession } from "../utils/auth";
 
 const EMAIL_MAX = 100;
 const PASSWORD_MAX = 128;
@@ -55,8 +56,13 @@ function Login() {
         password,
       });
 
-      const { role } = response.data;
-      localStorage.setItem("role", role);
+      const { role, token } = response.data;
+
+      if (!token || !role) {
+        throw new Error("Invalid authentication response");
+      }
+
+      setAuthSession({ token, role });
 
       if (role === "admin") {
         navigate("/admin/dashboard");
@@ -64,6 +70,7 @@ function Login() {
         navigate("/user/dashboard");
       }
     } catch (error) {
+      clearAuthSession();
       setSubmitError(error.response?.data?.error || "Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);

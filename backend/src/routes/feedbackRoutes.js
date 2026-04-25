@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Feedback = require("../models/feedback");
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, authorizeRoles('user', 'admin'), async (req, res) => {
   try {
     const { rating, comment } = req.body;
 
@@ -17,7 +18,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, authorizeRoles('admin'), async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
     res.json(feedbacks);

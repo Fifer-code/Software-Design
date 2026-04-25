@@ -1,5 +1,6 @@
 // this is where the backend connects to frontend from whatever files necessary
 import { createContext, useState, useEffect } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 
 export const QueueContext = createContext();        // seems like it always underlined in red
 
@@ -13,7 +14,9 @@ export function QueueProvider({ children }) {
     const fetchQueueData = async () => {
         try {
             // connections and logic for the wait times
-            const waitRes = await fetch('http://localhost:8080/api/queues/wait-time');
+            const waitRes = await fetch('http://localhost:8080/api/queues/wait-time', {
+                headers: getAuthHeaders()
+            });
             const waitData = await waitRes.json();
             setWaitTimes({
                 dmv: waitData.dmvWaitTime,
@@ -23,12 +26,16 @@ export function QueueProvider({ children }) {
             });
 
             // connections and logic for the queue lists and updates
-            const listRes = await fetch('http://localhost:8080/api/queues');
+            const listRes = await fetch('http://localhost:8080/api/queues', {
+                headers: getAuthHeaders()
+            });
             const listData = await listRes.json();
             setQueueLists(listData.queues);
 
             // connections and logic for service configs and updates
-            const serviceRes = await fetch('http://localhost:8080/api/services');
+            const serviceRes = await fetch('http://localhost:8080/api/services', {
+                headers: getAuthHeaders()
+            });
             const serviceData = await serviceRes.json();
             setServices(serviceData.services);
         } catch (err) {

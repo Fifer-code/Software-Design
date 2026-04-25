@@ -1,7 +1,7 @@
 import AdminSidebar from "../../components/AdminSidebar";
 import "./AdminDashboard.css"
 // backend connections
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { QueueContext } from '../../context/QueueContext';
 
 // modular card for service with configs from backend
@@ -16,7 +16,11 @@ const DashboardCard = ({ title, peopleCount, estimatedWait, priority }) => (
 
 function AdminDashboard() {
     // backend connection functions
-    const { waitTimes, queueLists, services } = useContext(QueueContext);
+    const { waitTimes, queueLists, services, fetchQueueData } = useContext(QueueContext);
+
+    useEffect(() => {
+        fetchQueueData();
+    }, []);
 
     if (!services || !queueLists || !waitTimes) {
         return (

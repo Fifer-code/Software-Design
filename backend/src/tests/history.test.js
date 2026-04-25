@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const historyRoutes = require("../routes/historyRoutes");
 const History = require("../models/history");
 
@@ -8,6 +9,11 @@ jest.mock("../models/history");
 const app = express();
 app.use(express.json());
 app.use("/api/history", historyRoutes);
+
+const adminToken = jwt.sign(
+    { sub: "test-admin-id", email: "admin@example.com", role: "admin" },
+    "dev-only-secret-change-me"
+);
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -23,7 +29,7 @@ describe("History API", () => {
             ];
             History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
 
-            const res = await request(app).get("/api/history");
+            const res = await request(app).get("/api/history").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
             expect(res.body.history).toHaveLength(2);
@@ -37,7 +43,7 @@ describe("History API", () => {
             ];
             History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
 
-            const res = await request(app).get("/api/history/D001");
+            const res = await request(app).get("/api/history/D001").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.history).toHaveLength(1);
             expect(res.body.history[0].ticketId).toBe("D001");
@@ -46,7 +52,7 @@ describe("History API", () => {
         test("returns empty array when no history exists for ticket", async () => {
             History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-            const res = await request(app).get("/api/history/ZZZZ");
+            const res = await request(app).get("/api/history/ZZZZ").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.history).toHaveLength(0);
         });
@@ -60,7 +66,7 @@ describe("History API", () => {
             ];
             History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
 
-            const res = await request(app).get("/api/history/service/dmv");
+            const res = await request(app).get("/api/history/service/dmv").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.history).toHaveLength(2);
             expect(res.body.history[0].serviceId).toBe("dmv");

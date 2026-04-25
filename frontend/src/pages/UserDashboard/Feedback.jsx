@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
 import "/src/userdashboard.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 const COMMENT_MAX = 500;
 
@@ -34,6 +35,8 @@ const handleSubmit = async () => {
     await axios.post("http://localhost:8080/api/feedback", {
       rating,
       comment
+    }, {
+      headers: getAuthHeaders()
     });
 
     addNotification("Thank you! Your feedback has been submitted.", "success");

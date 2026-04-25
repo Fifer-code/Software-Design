@@ -227,8 +227,9 @@ describe("Auth API", () => {
       expect(res.body.error).toBe("Invalid credentials");
     });
 
-    test("logs in with valid credentials and returns role", async () => {
+    test("logs in with valid credentials and returns role and token", async () => {
       UserCredentials.findOne.mockResolvedValue({
+        _id: "admin-id",
         email: "admin@example.com",
         passwordHash: "hashed-admin-password",
         role: "admin"
@@ -240,10 +241,12 @@ describe("Auth API", () => {
       });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body).toEqual({
+      expect(res.body).toEqual(expect.objectContaining({
         message: "Login successful",
         role: "admin"
-      });
+      }));
+      expect(typeof res.body.token).toBe("string");
+      expect(res.body.token.length).toBeGreaterThan(0);
       expect(bcrypt.compare).toHaveBeenCalledWith("adminpass", "hashed-admin-password");
     });
   });

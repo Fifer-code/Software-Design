@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const notificationRoutes = require("../routes/notificationRoutes");
 const Notification = require("../models/notification");
 
@@ -8,6 +9,11 @@ jest.mock("../models/notification");
 const app = express();
 app.use(express.json());
 app.use("/api/notifications", notificationRoutes);
+
+const adminToken = jwt.sign(
+    { sub: "test-admin-id", email: "admin@example.com", role: "admin" },
+    "dev-only-secret-change-me"
+);
 
 beforeEach(() => {
     jest.clearAllMocks();
@@ -23,7 +29,7 @@ describe("Notification API", () => {
             ];
             Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockNotifs) });
 
-            const res = await request(app).get("/api/notifications");
+            const res = await request(app).get("/api/notifications").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
             expect(res.body.notifications).toHaveLength(2);
@@ -37,7 +43,7 @@ describe("Notification API", () => {
             ];
             Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockNotifs) });
 
-            const res = await request(app).get("/api/notifications/D001");
+            const res = await request(app).get("/api/notifications/D001").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.notifications).toHaveLength(1);
             expect(res.body.notifications[0].ticketId).toBe("D001");
@@ -46,7 +52,7 @@ describe("Notification API", () => {
         test("returns empty array when no notifications exist for ticket", async () => {
             Notification.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-            const res = await request(app).get("/api/notifications/ZZZZ");
+            const res = await request(app).get("/api/notifications/ZZZZ").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.notifications).toHaveLength(0);
         });
@@ -57,7 +63,7 @@ describe("Notification API", () => {
             const updated = { _id: "abc123", ticketId: "D001", status: "viewed" };
             Notification.findByIdAndUpdate.mockResolvedValue(updated);
 
-            const res = await request(app).patch("/api/notifications/abc123/viewed");
+            const res = await request(app).patch("/api/notifications/abc123/viewed").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
             expect(res.body.notification.status).toBe("viewed");
@@ -66,7 +72,7 @@ describe("Notification API", () => {
         test("returns 404 if notification not found", async () => {
             Notification.findByIdAndUpdate.mockResolvedValue(null);
 
-            const res = await request(app).patch("/api/notifications/nonexistent/viewed");
+            const res = await request(app).patch("/api/notifications/nonexistent/viewed").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(404);
             expect(res.body.message).toBe("Notification not found");
         });

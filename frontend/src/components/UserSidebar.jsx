@@ -1,8 +1,13 @@
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { NavLink, Outlet } from "react-router-dom";
 import "./UserSidebar.css";
+import { clearAuthSession } from "../utils/auth";
 
 function UserSidebar() {
+  const handleLogout = () => {
+    clearAuthSession();
+  };
+
   return (
     <div className="sidebar-layout">
       <Sidebar>
@@ -24,7 +29,7 @@ function UserSidebar() {
           <div className="sidebar-footer">
             <div className="sidebar-avatar" />
             <div className="sidebar-user">User</div>
-            <NavLink to="/" className="sidebar-logout">Logout</NavLink>
+            <NavLink to="/" className="sidebar-logout" onClick={handleLogout}>Logout</NavLink>
           </div>
         </div>
       </Sidebar>

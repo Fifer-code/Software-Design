@@ -1,8 +1,9 @@
 import "./QueueManagement.css"
 import AdminSidebar from "../../components/AdminSidebar";
 // backend connections
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { QueueContext } from '../../context/QueueContext';
+import { getAuthHeaders } from '../../utils/auth';
 
 // modular reusable user row with buttons and name
 const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
@@ -63,11 +64,16 @@ function QueueManagement() {
     // backend connection functions
     const { waitTimes, queueLists, services, fetchQueueData } = useContext(QueueContext);
 
+    useEffect(() => {
+        fetchQueueData();
+    }, []);
+
     // logic for serving next user in queue using button
     const handleServeNext = async (serviceId) => {
         try {
             const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/serve`, {
-                method: 'POST'
+                method: 'POST',
+                headers: getAuthHeaders()
             });
             
             if (response.ok) {
@@ -87,9 +93,9 @@ function QueueManagement() {
             const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}/move`, {
                 method: 'PATCH', 
                 // Fix 2: Headers are required for req.body.direction to be parsed by express.json()
-                headers: {
-                    'Content-Type': 'application/json', 
-                },
+                headers: getAuthHeaders({
+                    'Content-Type': 'application/json',
+                }),
                 // Fix 3: Send the direction ('up' or 'down') so the backend knows how to swap
                 body: JSON.stringify({ direction }) 
             });
@@ -109,7 +115,8 @@ function QueueManagement() {
     const handleRemove = async (serviceId, ticketId) => {
         try {
             const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getAuthHeaders()
             });
             
             if (response.ok) {
