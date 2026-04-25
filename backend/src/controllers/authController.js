@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const UserCredentials = require('../models/userCredentials.js');
 const UserProfile = require('../models/userProfile.js');
+const { getJwtSecret } = require('../middleware/authMiddleware.js');
 
 const PASSWORD_MIN_LENGTH = 6;
 const NAME_MIN_LENGTH = 2;
@@ -133,8 +135,19 @@ exports.login = async (req, res) => {
     });
   }
 
+  const token = jwt.sign(
+    {
+      sub: String(user._id),
+      email: user.email,
+      role: user.role
+    },
+    getJwtSecret(),
+    { expiresIn: '8h' }
+  );
+
   res.json({
     message: 'Login successful',
-    role: user.role
+    role: user.role,
+    token
   });
 };

@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const serviceRoutes = require("../routes/serviceRoutes");
 
 jest.mock("../models/service");
@@ -11,6 +12,11 @@ const Queue = require("../models/queue");
 const app = express();
 app.use(express.json());
 app.use("/api/services", serviceRoutes);
+
+const adminToken = jwt.sign(
+  { sub: "test-admin-id", email: "admin@example.com", role: "admin" },
+  "dev-only-secret-change-me"
+);
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -25,6 +31,7 @@ describe("Services API", () => {
 
     const res = await request(app)
       .post("/api/services")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         id: "dmv",
         name: "DMV",
@@ -44,6 +51,7 @@ describe("Services API", () => {
   test("should reject missing fields", async () => {
     const res = await request(app)
       .post("/api/services")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         name: "Test",
       });
@@ -61,7 +69,7 @@ describe("Services API", () => {
       { serviceId: "dmv", name: "DMV Queue 1", description: "Standard DMV services", duration: 15, priority: "Low" }
     ]);
 
-    const res = await request(app).get("/api/services");
+    const res = await request(app).get("/api/services").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -77,6 +85,7 @@ describe("Services API", () => {
 
     const res = await request(app)
       .put("/api/services/dmv")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({ duration: 45 });
 
     expect(res.statusCode).toBe(200);
@@ -89,6 +98,7 @@ describe("Services API", () => {
 
     const res = await request(app)
       .put("/api/services/fakeID999")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({ name: "New Name" });
 
     expect(res.statusCode).toBe(404);

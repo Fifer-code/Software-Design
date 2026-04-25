@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const feedbackRoutes = require("../routes/feedbackRoutes");
 
 jest.mock("../models/feedback");
@@ -9,6 +10,11 @@ const Feedback = require("../models/feedback");
 const app = express();
 app.use(express.json());
 app.use("/api/feedback", feedbackRoutes);
+
+const adminToken = jwt.sign(
+  { sub: "test-admin-id", email: "admin@example.com", role: "admin" },
+  "dev-only-secret-change-me"
+);
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -23,6 +29,7 @@ describe("Feedback API", () => {
 
     const res = await request(app)
       .post("/api/feedback")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         rating: 5,
         comment: "Great service!"
@@ -41,6 +48,7 @@ describe("Feedback API", () => {
 
     const res = await request(app)
       .post("/api/feedback")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({ rating: 10 });
 
     expect(res.statusCode).toBe(400);
@@ -56,7 +64,7 @@ describe("Feedback API", () => {
       ])
     });
 
-    const res = await request(app).get("/api/feedback");
+    const res = await request(app).get("/api/feedback").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
@@ -70,7 +78,7 @@ describe("Feedback API", () => {
     sort: jest.fn().mockRejectedValue(new Error("DB error"))
   });
 
-  const res = await request(app).get("/api/feedback");
+  const res = await request(app).get("/api/feedback").set("Authorization", `Bearer ${adminToken}`);
 
   expect(res.statusCode).toBe(500);
   expect(typeof res.body.error).toBe("string");

@@ -1,5 +1,6 @@
 const request = require("supertest");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const serviceRoutes = require("../routes/serviceRoutes");
 const queueRoutes = require("../routes/queueRoutes");
 
@@ -26,6 +27,11 @@ app.use(express.json());
 app.use("/api/services", serviceRoutes);
 app.use("/api/queues", queueRoutes);
 
+const adminToken = jwt.sign(
+  { sub: "test-admin-id", email: "admin@example.com", role: "admin" },
+  "dev-only-secret-change-me"
+);
+
 beforeEach(() => {
   jest.clearAllMocks();
   // most tests need a valid service and open queue, set as default
@@ -42,6 +48,7 @@ describe("Queue API", () => {
 
     const res = await request(app)
       .post(`/api/queues/${serviceId}/join`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         name: "Steven",
       });
@@ -58,6 +65,7 @@ describe("Queue API", () => {
 
     const res = await request(app)
       .post(`/api/queues/${serviceId}/join`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
       });
 
@@ -79,11 +87,12 @@ describe("Queue API", () => {
 
     await request(app)
       .post(`/api/queues/${serviceId}/join`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         name: "TestUser",
       });
 
-    const res = await request(app).get("/api/queues");
+    const res = await request(app).get("/api/queues").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("queues");
@@ -103,6 +112,7 @@ describe("Queue API", () => {
 
     const join = await request(app)
       .post(`/api/queues/${serviceId}/join`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({
         name: "TestUser",
       });
@@ -113,14 +123,14 @@ describe("Queue API", () => {
 
     const res = await request(app).delete(
       `/api/queues/${serviceId}/${ticketId}`
-    );
+    ).set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe("User removed");
   });
 
   test("Leave queue with invalid id", async () => {
-    const res = await request(app).delete(`/api/queues/dmv/ZZZ999`);
+    const res = await request(app).delete(`/api/queues/dmv/ZZZ999`).set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -135,10 +145,10 @@ describe("Queue API", () => {
     QueueEntry.findOneAndUpdate.mockResolvedValue({ ticketId: "D001", name: "Alice", status: "waiting" });
     QueueEntry.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-    await request(app).post("/api/queues/dmv/join").send({ name: "Alice" });
+    await request(app).post("/api/queues/dmv/join").set("Authorization", `Bearer ${adminToken}`).send({ name: "Alice" });
 
     // Action: Hit the serve endpoint using the POST method from your routes
-    const res = await request(app).post("/api/queues/dmv/serve");
+    const res = await request(app).post("/api/queues/dmv/serve").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
   });
@@ -155,16 +165,16 @@ describe("Queue API", () => {
       .mockResolvedValueOnce(null);
     QueueEntry.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 
-    await request(app).post("/api/services").send({
+    await request(app).post("/api/services").set("Authorization", `Bearer ${adminToken}`).send({
       id: "emptyTest", name: "Empty", description: "Test", duration: 5, priority: "Low"
     });
 
-    await request(app).post("/api/queues/emptyTest/join").send({ name: "Ghost User" });
+    await request(app).post("/api/queues/emptyTest/join").set("Authorization", `Bearer ${adminToken}`).send({ name: "Ghost User" });
 
-    await request(app).post("/api/queues/emptyTest/serve");
+    await request(app).post("/api/queues/emptyTest/serve").set("Authorization", `Bearer ${adminToken}`);
 
     // 4. Action: Try to serve AGAIN. This will now hit the 400 error!
-    const res = await request(app).post("/api/queues/emptyTest/serve");
+    const res = await request(app).post("/api/queues/emptyTest/serve").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toBe("Queue is already empty");
@@ -174,7 +184,7 @@ describe("Queue API", () => {
     // override the default to simulate a service that doesnt exist
     Service.findOne.mockResolvedValue(null);
 
-    const res = await request(app).post("/api/queues/fake-service/serve");
+    const res = await request(app).post("/api/queues/fake-service/serve").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe("Service queue not found");
@@ -201,13 +211,14 @@ describe("Queue API", () => {
       ])
     });
 
-    await request(app).post("/api/queues/dmv/join").send({ name: "Person 1" });
-    const joinRes = await request(app).post("/api/queues/dmv/join").send({ name: "Person 2" });
+    await request(app).post("/api/queues/dmv/join").set("Authorization", `Bearer ${adminToken}`).send({ name: "Person 1" });
+    const joinRes = await request(app).post("/api/queues/dmv/join").set("Authorization", `Bearer ${adminToken}`).send({ name: "Person 2" });
     const ticketId = joinRes.body.ticketId;
 
     // Action: Hit the move endpoint using PATCH as defined in your routes
     const res = await request(app)
       .patch(`/api/queues/dmv/${ticketId}/move`)
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({ direction: "up" });
 
     expect(res.statusCode).toBe(200);
@@ -220,6 +231,7 @@ describe("Queue API", () => {
 
     const res = await request(app)
       .patch("/api/queues/dmv/FAKE999/move")
+      .set("Authorization", `Bearer ${adminToken}`)
       .send({ direction: "down" });
 
     expect(res.statusCode).toBe(404);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./ServiceManagement.css";
 import AdminSidebar from "../../components/AdminSidebar";
+import { getAuthHeaders } from "../../utils/auth";
 
 // modular reusable form to edit service
 const ServiceEditForm = ({ serviceId, title, initialData }) => {
@@ -23,7 +24,7 @@ const ServiceEditForm = ({ serviceId, title, initialData }) => {
         try {
             const response = await fetch(`http://localhost:8080/api/services/${serviceId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({
                     ...formData,
                     duration: Number(formData.duration)
@@ -97,7 +98,9 @@ function ServiceManagement() {
 
     // initial fetch of services from server.js
     useEffect(() => {
-        fetch('http://localhost:8080/api/services')
+        fetch('http://localhost:8080/api/services', {
+            headers: getAuthHeaders()
+        })
             .then(res => res.json())
             .then(data => setServices(data.services))
             .catch(err => console.error("Failed to fetch services:", err));
@@ -125,7 +128,7 @@ function ServiceManagement() {
 
             const response = await fetch('http://localhost:8080/api/services', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({
                     id: generatedId,
                     ...newService,

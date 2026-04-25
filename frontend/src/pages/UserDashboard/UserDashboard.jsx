@@ -3,6 +3,7 @@ import { useNotifications } from "../../context/NotificationContext";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "/src/userdashboard.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 function UserDashboard() {
   const navigate = useNavigate();
@@ -15,7 +16,9 @@ function UserDashboard() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/services");
+        const res = await axios.get("http://localhost:8080/api/services", {
+          headers: getAuthHeaders()
+        });
         const arr = res.data?.services;
         setServices(Array.isArray(arr) ? arr : []);
       } catch (err) {

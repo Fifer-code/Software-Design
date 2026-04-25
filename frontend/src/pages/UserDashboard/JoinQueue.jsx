@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";
 import axios from "axios";
 import "/src/userdashboard.css";
+import { getAuthHeaders } from "../../utils/auth";
 
 const NAME_MAX = 50;
 const REASON_MAX = 150;
@@ -21,7 +22,9 @@ function JoinQueue() {
 useEffect(() => {
   const fetchServices = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/services");
+      const res = await axios.get("http://localhost:8080/api/services", {
+        headers: getAuthHeaders()
+      });
       const arr = res.data?.services;
       setServices(Array.isArray(arr) ? arr : []);
     } catch (err) {
@@ -75,6 +78,9 @@ useEffect(() => {
         name: fullName.trim(),
         serviceId: service.id,
         priority: "Low",
+      },
+      {
+        headers: getAuthHeaders()
       }
     );
 
