@@ -32,14 +32,16 @@ const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
 );
 
 // modular reusable for entire service card, uses backend configs
-const QueueCard = ({ serviceId, title, usersList, estimatedWait, priority, onServe, onMove, onRemove }) => {
+const QueueCard = ({ serviceId, title, description, status, usersList, estimatedWait, priority, onServe, onMove, onRemove }) => {
     return (
         <div className="admin-subcard">
             <h3>{title}</h3>
+            {description && <p>{description}</p>}
             <div className="queue-description">
-                <p>People in Queue: {usersList?.length || 0}</p> 
-                <p>Estimated Wait: {estimatedWait} minutes</p>
-                <p>Priority: {priority}</p>
+                <p style={{flex: 1}}>People in Queue: {usersList?.length || 0}</p>
+                <p style={{flex: 1}}>Estimated Wait: {estimatedWait} minutes</p>
+                <p style={{flex: 1}}>Priority: {priority}</p>
+                <p style={{flex: 1}}>Status: {status}</p>
                 <button type="submit" className="serve-button" onClick={() => onServe(serviceId)}>
                     Serve Next User
                 </button>
@@ -62,7 +64,7 @@ const QueueCard = ({ serviceId, title, usersList, estimatedWait, priority, onSer
 
 function QueueManagement() {
     // backend connection functions
-    const { waitTimes, queueLists, services, fetchQueueData } = useContext(QueueContext);
+    const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
 
     useEffect(() => {
         fetchQueueData();
@@ -77,7 +79,9 @@ function QueueManagement() {
             });
             
             if (response.ok) {
-                fetchQueueData(); // Refresh the UI
+                const data = await response.json();
+                alert(data.message);
+                fetchQueueData();
             } else {
                 console.error("Failed to serve next:", await response.text());
             }
@@ -89,20 +93,18 @@ function QueueManagement() {
     // logic for for moving users pressing either move up or down button
     const handleMove = async (serviceId, ticketId, direction) => {
         try {
-            // Fix 1: Must be a PATCH request to match queueRoutes.js
             const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}/move`, {
                 method: 'PATCH', 
-                // Fix 2: Headers are required for req.body.direction to be parsed by express.json()
                 headers: getAuthHeaders({
                     'Content-Type': 'application/json',
                 }),
-                // Fix 3: Send the direction ('up' or 'down') so the backend knows how to swap
                 body: JSON.stringify({ direction }) 
             });
     
             if (response.ok) {
-                // Fix 4: Force React to re-render the new order by re-fetching
-                fetchQueueData(); 
+                const data = await response.json();
+                alert(data.message);
+                fetchQueueData();
             } else {
                 console.error("Move failed:", await response.text());
             }
@@ -120,7 +122,9 @@ function QueueManagement() {
             });
             
             if (response.ok) {
-                fetchQueueData(); // Refresh the UI
+                const data = await response.json();
+                alert(data.message);
+                fetchQueueData();
             } else {
                 console.error("Failed to remove:", await response.text());
             }
@@ -146,20 +150,23 @@ function QueueManagement() {
                 <div className="admin-card-container">
                     <div className="admin-card-1">
                             <h1>Available Queues & Information</h1>
-                            {/* creates new cards depending on how many there are */}
+                            <div className="queue-grid-container">
                             {services.map((service) => (
-                                <QueueCard 
+                                <QueueCard
                                     key={service.id}
                                     serviceId={service.id}
-                                    title={service.name} 
-                                    usersList={queueLists?.[service.id] || []} 
-                                    estimatedWait={waitTimes?.[service.id] || 0} 
+                                    title={service.name}
+                                    description={service.description || ""}
+                                    status={queueStatuses?.[service.id] || 'open'}
+                                    usersList={queueLists?.[service.id] || []}
+                                    estimatedWait={waitTimes?.[service.id] || 0}
                                     priority={service.priority || "Low"}
                                     onServe={handleServeNext}
-                                    onMove={handleMove} 
+                                    onMove={handleMove}
                                     onRemove={handleRemove}
                                 />
                             ))}
+                            </div>
                         </div>
                 </div>
             </div>

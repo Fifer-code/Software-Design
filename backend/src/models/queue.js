@@ -9,7 +9,7 @@ const queueSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['open', 'closed'],
+            enum: ['open', 'closed', 'paused'],
             default: 'open',
             required: true
         }

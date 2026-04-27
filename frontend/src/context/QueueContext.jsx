@@ -6,8 +6,9 @@ export const QueueContext = createContext();        // seems like it always unde
 
 export function QueueProvider({ children }) {
     // need to initialize everything from QueueController and ServiceController, but set them to minumum
-    const [waitTimes, setWaitTimes] = useState({ dmv: 0, bank: 0, advising: 0, placeholder: 0 });
-    const [queueLists, setQueueLists] = useState({ dmv: [], bank: [], advising: [], placeholder: [] });
+    const [waitTimes, setWaitTimes] = useState({ dmv: 0, bank: 0, advising: 0 });
+    const [queueLists, setQueueLists] = useState({ dmv: [], bank: [], advising: [] });
+    const [queueStatuses, setQueueStatuses] = useState({});
     const [services, setServices] = useState(null);
 
     // fetch the necessary queue data and service data from server.js
@@ -31,6 +32,7 @@ export function QueueProvider({ children }) {
             });
             const listData = await listRes.json();
             setQueueLists(listData.queues);
+            setQueueStatuses(listData.statuses || {});
 
             // connections and logic for service configs and updates
             const serviceRes = await fetch('http://localhost:8080/api/services', {
@@ -50,10 +52,11 @@ export function QueueProvider({ children }) {
 
     // need to return the functions done to connect to frontend
     return (
-        <QueueContext.Provider value={{ 
-            waitTimes, 
-            queueLists, 
-            services, 
+        <QueueContext.Provider value={{
+            waitTimes,
+            queueLists,
+            queueStatuses,
+            services,
             fetchQueueData
         }}>
             {children}

@@ -4,7 +4,7 @@ const router = express.Router();
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // import all exports from serviceController.js **MUST MATCH *
-const { getService, createService, updateService } = require('../controllers/serviceController');
+const { getService, createService, updateService, deleteService } = require('../controllers/serviceController');
 
 // gets information for all services
 router.get('/', authenticateToken, authorizeRoles('user', 'admin'), getService);
@@ -14,5 +14,8 @@ router.post('/', authenticateToken, authorizeRoles('admin'), createService);
 
 // updates a specific service
 router.put('/:id', authenticateToken, authorizeRoles('admin'), updateService);
+
+// deletes a specific service and its queue
+router.delete('/:id', authenticateToken, authorizeRoles('admin'), deleteService);
 
 module.exports = router;

@@ -4,7 +4,7 @@ const router = express.Router();
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // import all exports from queueController.js **MUST MATCH *
-const { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue } = require('../controllers/queueController');
+const { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, updateQueueStatus, clearAllQueues } = require('../controllers/queueController');
 
 // respective calls for each function
 // get calculated wait time
@@ -24,5 +24,11 @@ router.delete('/:serviceId/:ticketId', authenticateToken, authorizeRoles('admin'
 
 // join queue based off join queue button in UserDashboard
 router.post('/:serviceId/join', authenticateToken, authorizeRoles('user', 'admin'), joinQueue);
+
+// toggle pause/unpause or open/close a queue from Quick Actions in AdminDashboard
+router.patch('/:serviceId/status', authenticateToken, authorizeRoles('admin'), updateQueueStatus);
+
+// clear all waiting entries across all queues — end of day action
+router.delete('/reset', authenticateToken, authorizeRoles('admin'), clearAllQueues);
 
 module.exports = router;

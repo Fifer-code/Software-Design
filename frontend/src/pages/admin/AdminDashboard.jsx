@@ -1,13 +1,16 @@
 import AdminSidebar from "../../components/AdminSidebar";
 import "./AdminDashboard.css"
 // backend connections
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { getAuthHeaders } from '../../utils/auth';
 import { QueueContext } from '../../context/QueueContext';
 
 // modular card for service with configs from backend
-const DashboardCard = ({ title, peopleCount, estimatedWait, priority }) => (
+const DashboardCard = ({ title, description, peopleCount, estimatedWait, priority, status }) => (
     <div className="admin-subcard">
         <h3>{title}</h3>
+        <p>{description}</p>
+        <p>Status: {status || 'open'}</p>
         <p>People in Queue: {peopleCount}</p>
         <p>Estimated Wait: {estimatedWait} minutes</p>
         <p>Priority: {priority}</p>
@@ -16,11 +19,97 @@ const DashboardCard = ({ title, peopleCount, estimatedWait, priority }) => (
 
 function AdminDashboard() {
     // backend connection functions
-    const { waitTimes, queueLists, services, fetchQueueData } = useContext(QueueContext);
+    const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+
+    const [pauseServiceId, setPauseServiceId] = useState('');
+    const [closeServiceId, setCloseServiceId] = useState('');
+    const [openServiceId, setOpenServiceId] = useState('');
+    const [notifyServiceId, setNotifyServiceId] = useState('');
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     useEffect(() => {
         fetchQueueData();
     }, []);
+
+    const handlePauseUnpause = async () => {
+        if (!pauseServiceId) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/queues/${pauseServiceId}/status`, {
+                method: 'PATCH',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ action: 'toggle' })
+            });
+            const data = await res.json();
+            alert(data.message);
+            fetchQueueData();
+        } catch (err) {
+            console.error("Pause/Unpause failed:", err);
+        }
+    };
+
+    const handleClose = async () => {
+        if (!closeServiceId) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/queues/${closeServiceId}/status`, {
+                method: 'PATCH',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ action: 'close' })
+            });
+            const data = await res.json();
+            alert(data.message);
+            fetchQueueData();
+        } catch (err) {
+            console.error("Close failed:", err);
+        }
+    };
+
+    const handleOpen = async () => {
+        if (!openServiceId) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/queues/${openServiceId}/status`, {
+                method: 'PATCH',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ action: 'open' })
+            });
+            const data = await res.json();
+            alert(data.message);
+            fetchQueueData();
+        } catch (err) {
+            console.error("Open failed:", err);
+        }
+    };
+
+    const handleSendNotification = async () => {
+        if (!notifyServiceId || !notifyMessage.trim()) return;
+        try {
+            const res = await fetch('http://localhost:8080/api/notifications/admin', {
+                method: 'POST',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ serviceId: notifyServiceId, message: notifyMessage })
+            });
+            const data = await res.json();
+            console.log('[SEND NOTIFICATION]', data);
+            alert(data.message);
+            setNotifyMessage('');
+        } catch (err) {
+            console.error("Send notification failed:", err);
+        }
+    };
+
+    const handleClearAll = async () => {
+        if (!window.confirm("Clear all queues? This cannot be undone.")) return;
+        try {
+            const res = await fetch('http://localhost:8080/api/queues/reset', {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            const data = await res.json();
+            alert(data.message);
+            fetchQueueData();
+        } catch (err) {
+            console.error("Clear all failed:", err);
+        }
+    };
 
     if (!services || !queueLists || !waitTimes) {
         return (
@@ -33,87 +122,99 @@ function AdminDashboard() {
 
   return (
     <div className = "admin-layout">
-        <div>
-            <AdminSidebar></AdminSidebar>
-        </div>
+        <AdminSidebar></AdminSidebar>
     <div className = "admin-shell">
         <h2>Admin Dashboard</h2>
         <div className = "admin-card-container">
             <div className = "admin-card-1">
                 <h1>List of Services</h1>
-                <div className = "admin-subcard">
+                <div className="admin-subcard">
                     <h3>DMV</h3>
+                    <p>Standard DMV services:</p>
+                    <p>- License Renewal</p>
+                    <p>- ID Registration</p>
+                    <p>- Title Transfers</p>
+                    <p>- Take Driver's Test</p>
+                    <p>- Replace Lost Plates</p>
                 </div>
-                <div className = "admin-subcard">
+                <div className="admin-subcard">
                     <h3>Banking</h3>
+                    <p>Standard Teller services:</p>
+                    <p>- Cash Deposits /  Withdrawals</p>
+                    <p>- Open New Account</p>
+                    <p>- Apply for a Loan</p>
+                    <p>- Debit/Credit Card Replacement</p>
                 </div>
-                <div className = "admin-subcard">
+                <div className="admin-subcard">
                     <h3>Student Advising</h3>
-                </div>
-                <div className = "admin-subcard">
-                    <h3>placeholder</h3>
+                    <p>Standard Advising services:</p>
+                    <p>- Course Planning</p>
+                    <p>- Drop or Add Classes</p>
+                    <p>- Financial Aid Counseling</p>
+                    <p>- Transcript Requests</p>
                 </div>
             </div>
             <div className="admin-card-2">
                 <h1>Current Queue & Lengths</h1>
                 {/* creates new cards depending on how many there are */}
                 {services.map((service) => (
-                    <DashboardCard 
+                    <DashboardCard
                         key={service.id}
-                        title={service.name || "Unnamed Queue"} 
-                        peopleCount={queueLists?.[service.id]?.length || 0} 
-                        estimatedWait={waitTimes?.[service.id] || 0} 
-                        priority={service.priority || "Low"} 
+                        title={service.name || "Unnamed Queue"}
+                        description={service.description || ""}
+                        status={queueStatuses?.[service.id] || 'open'}
+                        peopleCount={queueLists?.[service.id]?.length || 0}
+                        estimatedWait={waitTimes?.[service.id] || 0}
+                        priority={service.priority || "Low"}
                     />
                 ))}
             </div>
             <div className = "admin-card-3">
                 <h1>Quick Actions</h1>
                 <div className = "admin-subcard form-group">
-                    <p>Select Queue to Pause</p>
-                    <select defaultValue="" required>
+                    <p>Pause / Unpause Queue</p>
+                    <select value={pauseServiceId} onChange={(e) => setPauseServiceId(e.target.value)}>
                         <option value="" disabled hidden></option>
-                        <option value = "DMV 1">DMV Queue 1</option>
-                        <option value = "Banking 1">Banking Queue 1</option>
-                        <option value = "Advising 1">Student Advising Queue 1</option>
-                        <option value = "placeholder">placeholder</option>
+                        {services.map((service) => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                        ))}
                     </select>
+                    <button className="action-btn" onClick={handlePauseUnpause}>Pause / Unpause</button>
                 </div>
                 <div className = "admin-subcard form-group">
-                    <p>Select Queue to Close</p>
-                    <select defaultValue="" required>
+                    <p>Close Queue</p>
+                    <select value={closeServiceId} onChange={(e) => setCloseServiceId(e.target.value)}>
                         <option value="" disabled hidden></option>
-                        <option value = "DMV 1">DMV Queue 1</option>
-                        <option value = "Banking 1">Banking Queue 1</option>
-                        <option value = "Advising 1">Student Advising Queue 1</option>
-                        <option value = "placeholder">placeholder</option>
+                        {services.map((service) => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                        ))}
                     </select>
+                    <button className="action-btn" onClick={handleClose}>Close</button>
                 </div>
                 <div className = "admin-subcard form-group">
-                    <p>Select Queue to Open</p>
-                    <select defaultValue="" required>
+                    <p>Open Queue</p>
+                    <select value={openServiceId} onChange={(e) => setOpenServiceId(e.target.value)}>
                         <option value="" disabled hidden></option>
-                        <option value = "DMV 1">DMV Queue 1</option>
-                        <option value = "Banking 1">Banking Queue 1</option>
-                        <option value = "Advising 1">Student Advising Queue 1</option>
-                        <option value = "placeholder">placeholder</option>
+                        {services.map((service) => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                        ))}
                     </select>
+                    <button className="action-btn" onClick={handleOpen}>Open</button>
                 </div>
                 <div className = "admin-subcard-tall form-group">
                     <p>Send Notification</p>
-                    <select defaultValue="" required>
+                    <select value={notifyServiceId} onChange={(e) => setNotifyServiceId(e.target.value)}>
                         <option value="" disabled hidden></option>
-                        <option value = "DMV 1">DMV Queue 1</option>
-                        <option value = "Banking 1">Banking Queue 1</option>
-                        <option value = "Advising 1">Student Advising Queue 1</option>
-                        <option value = "placeholder">placeholder</option>
+                        {services.map((service) => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                        ))}
                     </select>
-                    <textarea rows = "7"></textarea>
+                    <textarea rows="4" value={notifyMessage} onChange={(e) => setNotifyMessage(e.target.value)}></textarea>
+                    <button className="action-btn" onClick={handleSendNotification}>Send</button>
                 </div>
                 <div className = "admin-subcard-short">
-                    <p>Clear All Queues</p>
+                    <button className="action-btn" onClick={handleClearAll}>Clear All Queues</button>
                 </div>
-
             </div>
         </div>
     </div>

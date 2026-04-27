@@ -26,6 +26,10 @@ const serviceSchema =  new mongoose.Schema(
             type: String,
             required: true,
             enum: ['Low', 'Medium', 'High']
+        },
+        category:{
+            type: String,
+            enum: ['DMV', 'Banking', 'Student Advising']
         }
     },
     {
