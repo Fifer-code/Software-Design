@@ -1,3 +1,21 @@
+.admin-shell {
+    --main-bg: #ffffff;
+    --main-card: #ffffff;
+    --main-ink: #111111;
+    --main-muted: #4b5563;
+    --main-border: #d6dde6;
+    --main-accent: #1f4c8f;
+    --main-accent-2: #163a6d;
+    color: var(--main-ink);
+    background: var(--main-bg);
+}
+
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3 {
+    color: var(--main-accent-2);
+}
+
 .feedback-stats-row {
     display: flex;
     gap: 20px;

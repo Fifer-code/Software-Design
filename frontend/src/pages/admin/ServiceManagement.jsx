@@ -4,8 +4,8 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { getAuthHeaders } from "../../utils/auth";
 import { QueueContext } from "../../context/QueueContext";
 
-// modular reusable form to edit service
-const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) => {
+// Expanded edit form for a single service
+const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
     const [formData, setFormData] = useState({
         name: initialData.name || "",
         duration: initialData.duration || "",
@@ -15,12 +15,10 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
         status: status || "open"
     });
 
-    // updates form fields
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // connects to the backend to update the specific service by id
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -44,6 +42,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
 
             alert(`${formData.name} successfully updated!`);
             onRefresh();
+            onClose();
         } catch (error) {
             console.error(`Error updating ${title}:`, error);
         }
@@ -59,17 +58,14 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
             const data = await response.json();
             alert(data.message);
             onRefresh();
+            onClose();
         } catch (error) {
             console.error(`Error deleting ${title}:`, error);
         }
     };
 
     return (
-        <div className="admin-subcard">
-            <div className="subcard-header">
-                <h3>{title}</h3>
-                <button type="button" className="delete-btn" onClick={handleDelete}>Delete</button>
-            </div>
+        <div className="service-edit-expanded">
             <form className="admin-edit-form" onSubmit={handleSubmit}>
                 <div className="edit-left">
                     <div className="form-group">
@@ -131,7 +127,11 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
                             <option value="Low">Low</option>
                         </select>
                     </div>
-                    <button type="submit" className="save-btn">Save</button>
+                    <div className="edit-form-actions">
+                        <button type="submit" className="save-btn">Save</button>
+                        <button type="button" className="delete-btn" onClick={handleDelete}>Delete</button>
+                        <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -141,6 +141,8 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
 function ServiceManagement() {
     const { queueStatuses } = useContext(QueueContext);
     const [services, setServices] = useState(null);
+    const [expandedId, setExpandedId] = useState(null);
+    const [activeView, setActiveView] = useState('edit'); // 'create' or 'edit'
 
     const fetchServices = () => {
         fetch('http://localhost:8080/api/services', {
@@ -155,7 +157,6 @@ function ServiceManagement() {
         fetchServices();
     }, []);
 
-    // needed for create service form
     const [newService, setNewService] = useState({
         category: '',
         name: '',
@@ -164,12 +165,10 @@ function ServiceManagement() {
         priority: ''
     });
 
-    // update service
     const handleNewServiceChange = (e) => {
         setNewService({ ...newService, [e.target.name]: e.target.value });
     };
 
-    // connect to backend and store to display
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
@@ -203,10 +202,22 @@ function ServiceManagement() {
             <AdminSidebar />
             <div className="admin-shell">
                 <h2>Service Management</h2>
+                <div className="view-toggle-buttons">
+                    <button
+                        className={`toggle-btn ${activeView === 'create' ? 'active' : ''}`}
+                        onClick={() => setActiveView('create')}
+                    >
+                        Create Queue
+                    </button>
+                    <button
+                        className={`toggle-btn ${activeView === 'edit' ? 'active' : ''}`}
+                        onClick={() => setActiveView('edit')}
+                    >
+                        Edit Queue
+                    </button>
+                </div>
                 <div className="admin-card-container">
-                    <div className="admin-card-1">
-                        <h1>Create Queue</h1>
-                        <p>Create Brand New Custom Queue</p>
+                    {activeView === 'create' && <div className="admin-card-1">
                         <form className="admin-create-form" onSubmit={handleCreate}>
                             <div className="form-group">
                                 <label>Service Category:</label>
@@ -240,29 +251,67 @@ function ServiceManagement() {
                             </div>
                             <button type="submit">Create New Service</button>
                         </form>
-                    </div>
+                    </div>}
 
-                    <div className="admin-card-2">
-                        <h1>Edit Queue</h1>
-                        <p>Modify Existing Queue</p>
-                        {services ? (
-                            <>
-                                {services.map((service) => (
-                                    <ServiceEditForm
-                                        key={service.id}
-                                        serviceId={service.id}
-                                        title={service.name}
-                                        status={queueStatuses?.[service.id] || 'open'}
-                                        initialData={service}
-                                        onRefresh={fetchServices}
-                                    />
-                                ))}
-                            </>
-                        ) : (
-                            <p>Loading services...</p>
-                        )}
-                    </div>
-
+                    {activeView === 'edit' && <div className="admin-card-2">
+                        <div className="service-table-shell">
+                            <div className="service-table-header">
+                                <div className="service-col service-col-name">Queue Name</div>
+                                <div className="service-col">Duration</div>
+                                <div className="service-col">Category</div>
+                                <div className="service-col">Priority</div>
+                                <div className="service-col">Status</div>
+                                <div className="service-col service-col-action">Action</div>
+                            </div>
+                            <div className="service-table-body">
+                                {services ? (
+                                    services.map((service) => (
+                                        <div key={service.id}>
+                                            <div className="service-row">
+                                                <div className="service-col service-col-name">
+                                                    <div className="service-name">{service.name}</div>
+                                                    <div className="service-desc">{service.description}</div>
+                                                </div>
+                                                <div className="service-col">{service.duration} min</div>
+                                                <div className="service-col">{service.category || "—"}</div>
+                                                <div className="service-col">
+                                                    <span className={`service-chip service-priority-${service.priority?.toLowerCase() || 'low'}`}>
+                                                        {service.priority || "Low"}
+                                                    </span>
+                                                </div>
+                                                <div className="service-col">
+                                                    <span className={`service-chip service-status-${queueStatuses?.[service.id]?.toLowerCase() || 'open'}`}>
+                                                        {queueStatuses?.[service.id] || "open"}
+                                                    </span>
+                                                </div>
+                                                <div className="service-col service-col-action">
+                                                    <button
+                                                        type="button"
+                                                        className="edit-btn"
+                                                        onClick={() => setExpandedId(expandedId === service.id ? null : service.id)}
+                                                    >
+                                                        {expandedId === service.id ? "Close" : "Edit"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {expandedId === service.id && (
+                                                <ServiceEditForm
+                                                    serviceId={service.id}
+                                                    title={service.name}
+                                                    status={queueStatuses?.[service.id] || 'open'}
+                                                    initialData={service}
+                                                    onRefresh={fetchServices}
+                                                    onClose={() => setExpandedId(null)}
+                                                />
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="service-loading">Loading services...</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>}
                 </div>
             </div>
         </div>

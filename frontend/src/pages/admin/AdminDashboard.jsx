@@ -1,40 +1,27 @@
 import AdminSidebar from "../../components/AdminSidebar";
 import "./AdminDashboard.css"
+import personIcon from '../../assets/person.svg';
 // backend connections
 import { useContext, useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../utils/auth';
 import { QueueContext } from '../../context/QueueContext';
 
-// modular card for service with configs from backend
-const DashboardCard = ({ title, description, peopleCount, estimatedWait, priority, status }) => (
-    <div className="admin-subcard">
-        <h3>{title}</h3>
-        <p>{description}</p>
-        <p>Status: {status || 'open'}</p>
-        <p>People in Queue: {peopleCount}</p>
-        <p>Estimated Wait: {estimatedWait} minutes</p>
-        <p>Priority: {priority}</p>
-    </div>
-);
-
 function AdminDashboard() {
     // backend connection functions
-    const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+    const { queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
 
-    const [pauseServiceId, setPauseServiceId] = useState('');
-    const [closeServiceId, setCloseServiceId] = useState('');
-    const [openServiceId, setOpenServiceId] = useState('');
-    const [notifyServiceId, setNotifyServiceId] = useState('');
+    const [selectedServiceId, setSelectedServiceId] = useState('');
     const [notifyMessage, setNotifyMessage] = useState('');
+    const [showNotifyBox, setShowNotifyBox] = useState(false);
 
     useEffect(() => {
         fetchQueueData();
     }, []);
 
     const handlePauseUnpause = async () => {
-        if (!pauseServiceId) return;
+        if (!selectedServiceId) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/queues/${pauseServiceId}/status`, {
+            const res = await fetch(`http://localhost:8080/api/queues/${selectedServiceId}/status`, {
                 method: 'PATCH',
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ action: 'toggle' })
@@ -48,9 +35,9 @@ function AdminDashboard() {
     };
 
     const handleClose = async () => {
-        if (!closeServiceId) return;
+        if (!selectedServiceId) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/queues/${closeServiceId}/status`, {
+            const res = await fetch(`http://localhost:8080/api/queues/${selectedServiceId}/status`, {
                 method: 'PATCH',
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ action: 'close' })
@@ -64,9 +51,9 @@ function AdminDashboard() {
     };
 
     const handleOpen = async () => {
-        if (!openServiceId) return;
+        if (!selectedServiceId) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/queues/${openServiceId}/status`, {
+            const res = await fetch(`http://localhost:8080/api/queues/${selectedServiceId}/status`, {
                 method: 'PATCH',
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({ action: 'open' })
@@ -80,17 +67,17 @@ function AdminDashboard() {
     };
 
     const handleSendNotification = async () => {
-        if (!notifyServiceId || !notifyMessage.trim()) return;
+        if (!selectedServiceId || !notifyMessage.trim()) return;
         try {
             const res = await fetch('http://localhost:8080/api/notifications/admin', {
                 method: 'POST',
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({ serviceId: notifyServiceId, message: notifyMessage })
+                body: JSON.stringify({ serviceId: selectedServiceId, message: notifyMessage })
             });
             const data = await res.json();
             console.log('[SEND NOTIFICATION]', data);
             alert(data.message);
-            setNotifyMessage('');
+                setNotifyMessage('');
         } catch (err) {
             console.error("Send notification failed:", err);
         }
@@ -111,7 +98,7 @@ function AdminDashboard() {
         }
     };
 
-    if (!services || !queueLists || !waitTimes) {
+    if (!services || !queueLists) {
         return (
             <div className="admin-layout">
                 <AdminSidebar />
@@ -124,7 +111,37 @@ function AdminDashboard() {
     <div className = "admin-layout">
         <AdminSidebar></AdminSidebar>
     <div className = "admin-shell">
-        <h2>Admin Dashboard</h2>
+        <div className="dashboard-header-row">
+            <h2>Admin Dashboard</h2>
+            <div className="global-quick-actions">
+                <div className="global-qa-inner">
+                    <div className="qa-label">Quick Actions</div>
+                    <select value={selectedServiceId} onChange={(e) => setSelectedServiceId(e.target.value)} className="qa-select">
+                        <option value="" disabled hidden>Select a queue</option>
+                        {services.map((service) => (
+                            <option key={service.id} value={service.id}>{service.name}</option>
+                        ))}
+                    </select>
+                    <div className="qa-buttons">
+                        <button className="qa-btn" onClick={handlePauseUnpause}>Pause / Unpause</button>
+                        <button className="qa-btn" onClick={handleClose}>Close</button>
+                        <button className="qa-btn" onClick={handleOpen}>Open</button>
+                        <button className="qa-btn" onClick={handleClearAll}>Clear All</button>
+                        <button className="qa-btn" onClick={() => setShowNotifyBox((s) => !s)}>{showNotifyBox ? 'Hide Message' : 'Send Notification'}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {showNotifyBox && (
+            <div className="global-qa-collapse">
+                <div className="global-qa-inner">
+                    <textarea className="notify-textarea" rows={4} value={notifyMessage} onChange={(e) => setNotifyMessage(e.target.value)} placeholder="Message to selected queue" />
+                    <button className="notify-send-btn" onClick={handleSendNotification}>Send</button>
+                </div>
+            </div>
+        )}
+
         <div className = "admin-card-container">
             <div className = "admin-card-1">
                 <h1>List of Services</h1>
@@ -135,7 +152,6 @@ function AdminDashboard() {
                     <p>- ID Registration</p>
                     <p>- Title Transfers</p>
                     <p>- Take Driver's Test</p>
-                    <p>- Replace Lost Plates</p>
                 </div>
                 <div className="admin-subcard">
                     <h3>Banking</h3>
@@ -156,66 +172,30 @@ function AdminDashboard() {
             </div>
             <div className="admin-card-2">
                 <h1>Current Queue & Lengths</h1>
-                {/* creates new cards depending on how many there are */}
-                {services.map((service) => (
-                    <DashboardCard
-                        key={service.id}
-                        title={service.name || "Unnamed Queue"}
-                        description={service.description || ""}
-                        status={queueStatuses?.[service.id] || 'open'}
-                        peopleCount={queueLists?.[service.id]?.length || 0}
-                        estimatedWait={waitTimes?.[service.id] || 0}
-                        priority={service.priority || "Low"}
-                    />
-                ))}
-            </div>
-            <div className = "admin-card-3">
-                <h1>Quick Actions</h1>
-                <div className = "admin-subcard form-group">
-                    <p>Pause / Unpause Queue</p>
-                    <select value={pauseServiceId} onChange={(e) => setPauseServiceId(e.target.value)}>
-                        <option value="" disabled hidden></option>
-                        {services.map((service) => (
-                            <option key={service.id} value={service.id}>{service.name}</option>
-                        ))}
-                    </select>
-                    <button className="action-btn" onClick={handlePauseUnpause}>Pause / Unpause</button>
-                </div>
-                <div className = "admin-subcard form-group">
-                    <p>Close Queue</p>
-                    <select value={closeServiceId} onChange={(e) => setCloseServiceId(e.target.value)}>
-                        <option value="" disabled hidden></option>
-                        {services.map((service) => (
-                            <option key={service.id} value={service.id}>{service.name}</option>
-                        ))}
-                    </select>
-                    <button className="action-btn" onClick={handleClose}>Close</button>
-                </div>
-                <div className = "admin-subcard form-group">
-                    <p>Open Queue</p>
-                    <select value={openServiceId} onChange={(e) => setOpenServiceId(e.target.value)}>
-                        <option value="" disabled hidden></option>
-                        {services.map((service) => (
-                            <option key={service.id} value={service.id}>{service.name}</option>
-                        ))}
-                    </select>
-                    <button className="action-btn" onClick={handleOpen}>Open</button>
-                </div>
-                <div className = "admin-subcard-tall form-group">
-                    <p>Send Notification</p>
-                    <select value={notifyServiceId} onChange={(e) => setNotifyServiceId(e.target.value)}>
-                        <option value="" disabled hidden></option>
-                        {services.map((service) => (
-                            <option key={service.id} value={service.id}>{service.name}</option>
-                        ))}
-                    </select>
-                    <textarea rows="4" value={notifyMessage} onChange={(e) => setNotifyMessage(e.target.value)}></textarea>
-                    <button className="action-btn" onClick={handleSendNotification}>Send</button>
-                </div>
-                <div className = "admin-subcard-short">
-                    <button className="action-btn" onClick={handleClearAll}>Clear All Queues</button>
+                <div className="dash-queue-rows-shell">
+                    {services.map((service) => {
+                        const status = (queueStatuses?.[service.id] || 'open').toLowerCase();
+                        const statusClass = ['open', 'paused', 'closed'].includes(status) ? status : 'default';
+                        const people = queueLists?.[service.id]?.length || 0;
+
+                        return (
+                            <div className="dash-queue-row" key={service.id}>
+                                <div className="dash-queue-row-main dash-queue-col-service">
+                                    <p className="dash-queue-row-name">{service.name || "Unnamed Queue"}</p>
+                                    <p className="dash-queue-row-detail">{service.description || "No details provided"}</p>
+                                </div>
+
+                                <div className="dash-queue-row-status dash-queue-col-status">
+                                    <span className={`dash-queue-chip dash-queue-chip-status-${statusClass}`}>{status}</span>
+                                </div>
+
+                                <span className="dash-queue-people-count dash-queue-col-people"><img src={personIcon} alt="person" className="dash-person-icon"/> {people}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
+            
         </div>
     </div>
     </div>

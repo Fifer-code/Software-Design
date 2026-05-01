@@ -1,3 +1,22 @@
+.admin-shell {
+    --main-bg: #ffffff;
+    --main-card: #ffffff;
+    --main-ink: #111111;
+    --main-muted: #4b5563;
+    --main-border: #d6dde6;
+    --main-accent: #1f4c8f;
+    --main-accent-2: #163a6d;
+    --admin-header-blue: #1f4c8f;
+    color: var(--main-ink);
+    background: var(--main-bg);
+}
+
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3 {
+    color: var(--main-accent-2);
+}
+
 .admin-layout{
     display: grid;
     grid-template-columns: 250px 1fr;
@@ -8,11 +27,12 @@
 .admin-shell {
     height: 100%;
     background: var(--main-bg);
-    padding: 1px; 
     padding: 24px;
     box-sizing: border-box;
-    overflow: hidden;
+    display: flex;
     flex-direction: column;
+    overflow: hidden;
+    position: relative; /* allow overlays positioned inside the shell */
 }
 
 .admin-card-container{
@@ -20,7 +40,103 @@
     gap: 24px;
     align-items: stretch;
     flex-wrap: nowrap;
-    height: calc(100% - 40px);
+    flex: 1;
+    min-height: 0;
+}
+
+/* place title at left and quick actions at right in header row */
+.dashboard-header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 18px;
+    margin-bottom: 8px;
+}
+
+.dashboard-header-row h2{
+    margin: 0;
+    white-space: nowrap;
+}
+
+/* Global Quick Actions in header row (right aligned) */
+.global-quick-actions{
+    width: auto;
+    box-sizing: border-box;
+    padding: 0;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+.global-quick-actions .global-qa-inner{
+    width: auto;
+    max-width: none;
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    box-shadow: 0 6px 12px rgba(15,23,42,0.06);
+}
+.global-quick-actions .qa-select{ min-width: 260px; }
+.global-quick-actions .qa-buttons{ margin-left: auto; }
+
+/* label at left of global actions */
+.global-quick-actions .qa-label{
+    font-weight: 700;
+    color: var(--main-accent-2);
+    padding: 4px 8px;
+    margin-right: 6px;
+}
+
+/* collapsible notification box beneath the actions bar */
+/* notification overlay that floats above content without moving layout */
+.global-qa-collapse{
+    position: absolute;
+    top: 94px; /* drop lower under header actions */
+    right: 72px; /* pull popup left from screen edge */
+    left: auto;
+    width: min(820px, calc(100% - 120px));
+    display: block;
+    pointer-events: none; /* let clicks pass through outside the panel */
+    z-index: 60;
+}
+.global-qa-collapse .global-qa-inner{
+    max-width: none;
+    width: 100%;
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    gap: 12px;
+    display:flex;
+    align-items: center;
+    box-shadow: 0 10px 24px rgba(15,23,42,0.12);
+    pointer-events: auto; /* allow interacting with the panel */
+}
+.notify-textarea{
+    width: 100%;
+    min-height: 84px;
+    border-radius: 8px;
+    border: 1px solid var(--main-border);
+    padding: 10px;
+    box-sizing: border-box;
+    resize: vertical;
+    background: var(--main-card);
+    color: var(--main-ink);
+}
+.notify-textarea::placeholder{ color: var(--main-muted); }
+.notify-send-btn{
+    background: var(--main-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-left: 12px;
+    cursor: pointer;
+    align-self: center;
 }
 
 h2{
@@ -40,11 +156,11 @@ a{
     flex-direction: column;
     justify-content: flex-start;
     flex: 1;
-    min-height: 100%;
+    min-height: 0;
     min-width: 200px;
     animation: auth-rise 500ms ease-out;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
-    padding: 32px 28px;
+    padding: 0;
     box-sizing: border-box;
     overflow-y: auto;
 }
@@ -53,17 +169,174 @@ a{
     flex: 2;
 }
 
+/* Current Queue & Lengths row layout */
+.dash-queue-rows-shell{
+    display: flex;
+    flex-direction: column;
+    padding: 6px 14px 10px 14px;
+    gap: 0;
+}
+
+.dash-queue-row{
+    display: grid;
+    grid-template-columns: minmax(0, 2.4fr) 0.65fr 0.45fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--main-border);
+}
+
+.dash-queue-row:last-child{
+    border-bottom: none;
+}
+
+.dash-queue-row-main{
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.dash-queue-row-status{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dash-queue-col-service { min-width: 0; }
+.dash-queue-col-status { justify-self: center; }
+.dash-queue-col-people { justify-self: end; }
+
+.admin-card-2 .dash-queue-row-name{
+    margin: 0;
+    padding: 0;
+    color: var(--main-accent-2);
+    font-weight: 700;
+    font-size: 1.02rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+}
+
+.admin-card-2 .dash-queue-row-detail{
+    margin: 0;
+    padding: 0;
+    color: var(--main-ink);
+    font-size: 0.97rem;
+}
+
+.admin-card-2 .dash-queue-row-detail{
+    color: var(--main-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.86rem;
+    line-height: 1.2;
+}
+
+.dash-queue-people-count{
+    min-width: 30px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--main-ink);
+    justify-self: end;
+    font-size: 1rem;
+}
+
+.dash-queue-status-dot{
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    display: inline-block;
+    box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.22);
+}
+
+.dash-queue-status-open{
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+.dash-queue-status-paused{
+    background: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.dash-queue-status-closed{
+    background: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.dash-queue-status-default{
+    background: #94a3b8;
+}
+
+/* Person icon next to count */
+.dash-person-icon{
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: hue-rotate(200deg) saturate(60%) brightness(20%);
+}
+
+/* Chip style matching QueueManagement .queue-chip */
+.dash-queue-chip{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+.dash-queue-chip-status-open {
+    background: rgba(39, 174, 96, 0.14);
+    color: #22864a;
+    border-color: rgba(39, 174, 96, 0.3);
+}
+
+.dash-queue-chip-status-paused {
+    background: rgba(241, 196, 15, 0.16);
+    color: #9c7f00;
+    border-color: rgba(241, 196, 15, 0.35);
+}
+
+.dash-queue-chip-status-closed {
+    background: rgba(231, 76, 60, 0.14);
+    color: #ba2d20;
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.dash-queue-chip-status-default{
+    background: rgba(148,163,184,0.08);
+    color: #334155;
+}
+
 .admin-card-1 h1, .admin-card-2 h1, .admin-card-3 h1{
     color: var(--main-ink);
-    margin: 0 0 6px;
+    margin: 0 0 0 0;
+    padding: 16px 28px;
 	font-size: 2.1rem;
 	letter-spacing: -0.03em;
     overflow-wrap: break-word;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--admin-header-blue);
+    color: #ffffff !important;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .admin-card-1 p, .admin-card-2 p, .admin-card-3 p {
 	margin: 0 0 22px;
 	color: var(--main-muted);
+	padding: 0 28px;
 }
 
 .admin-subcard{
@@ -78,7 +351,18 @@ a{
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
-    margin: 10px;
+    margin: 10px 28px;
+}
+
+/* Make List of Services subcards more even in height and spacing */
+.admin-card-1 .admin-subcard{
+    min-height: 140px;
+    padding: 18px 18px;
+    margin: 16px 24px;
+}
+
+.admin-card-1 .admin-subcard h3{
+    margin-top: 0;
 }
 
 .admin-subcard p, .admin-subcard-tall p, .admin-subcard-short p{
@@ -109,7 +393,7 @@ a{
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
-    margin: 10px;
+    margin: 10px 28px;
 }
 
 .admin-subcard-tall p {
@@ -128,7 +412,7 @@ a{
     min-width: 200px;
     box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
     padding: 16px 14px;
-    margin: 10px;
+    margin: 10px 28px;
 }
 
 .admin-subcard p, textarea{
@@ -149,6 +433,42 @@ a{
     width: 100%;
     box-sizing: border-box;
 }
+
+/* Quick Actions top bar */
+.admin-card-3 .quick-actions-bar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    padding:16px 28px;
+    box-sizing:border-box;
+}
+
+.qa-select{
+    min-width: 300px;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--main-border);
+    background:var(--main-card);
+    color:var(--main-ink);
+}
+
+.qa-buttons{
+    display:flex;
+    gap:10px;
+    margin-left:auto;
+}
+
+.qa-btn{
+    background: var(--main-accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.qa-btn:hover{ transform: translateY(-1px); }
 
 .action-btn {
     background-color: var(--main-accent);
