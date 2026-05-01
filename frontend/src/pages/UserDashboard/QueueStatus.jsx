@@ -54,8 +54,8 @@ function QueueStatus() {
         });
         const notifications = res.data.notifications || [];
         notifications.forEach((notif) => {
-          if (!seenNotifIds.current.has(notif.id)) {
-            seenNotifIds.current.add(notif.id);
+          if (!seenNotifIds.current.has(notif._id)) {
+            seenNotifIds.current.add(notif._id);
             if (notif.type === "near_front") {
               addNotification(notif.message, "warning");
             } else if (notif.type === "joined") {
