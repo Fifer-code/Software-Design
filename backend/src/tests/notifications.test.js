@@ -2,9 +2,12 @@ const request = require("supertest");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const notificationRoutes = require("../routes/notificationRoutes");
-const Notification = require("../models/notification");
 
 jest.mock("../models/notification");
+jest.mock("../models/queueEntry");
+
+const Notification = require("../models/notification");
+const QueueEntry = require("../models/queueEntry");
 
 const app = express();
 app.use(express.json());
@@ -75,6 +78,48 @@ describe("Notification API", () => {
             const res = await request(app).patch("/api/notifications/nonexistent/viewed").set("Authorization", `Bearer ${adminToken}`);
             expect(res.statusCode).toBe(404);
             expect(res.body.message).toBe("Notification not found");
+        });
+    });
+
+    describe("POST /api/notifications/admin", () => {
+        test("sends admin notification to all waiting users", async () => {
+            QueueEntry.find.mockResolvedValue([
+                { ticketId: "D001", name: "Alice", queueId: "dmv" },
+                { ticketId: "D002", name: "Bob", queueId: "dmv" }
+            ]);
+            Notification.create.mockResolvedValue({});
+
+            const res = await request(app)
+                .post("/api/notifications/admin")
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ serviceId: "dmv", message: "Queue will close in 10 minutes" });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.notifications).toHaveLength(2);
+            expect(Notification.create).toHaveBeenCalledTimes(2);
+        });
+
+        test("returns 404 when no users are waiting in that queue", async () => {
+            QueueEntry.find.mockResolvedValue([]);
+
+            const res = await request(app)
+                .post("/api/notifications/admin")
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ serviceId: "dmv", message: "Closing soon" });
+
+            expect(res.statusCode).toBe(404);
+            expect(res.body.success).toBe(false);
+        });
+
+        test("returns 400 when serviceId or message is missing", async () => {
+            const res = await request(app)
+                .post("/api/notifications/admin")
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ serviceId: "dmv" });
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body.success).toBe(false);
         });
     });
 

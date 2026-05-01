@@ -7,7 +7,7 @@ const UserProfile = require('../models/userProfile');
 const defaultServices = [
     {
         serviceId: 'dmv',
-        name: 'DMV',
+        name: 'DMV Queue 1',
         description: 'Join queue to renew Drivers License with clerk',
         duration: 15,
         priority: 'Low',
@@ -15,7 +15,7 @@ const defaultServices = [
     },
     {
         serviceId: 'bank',
-        name: 'Banking',
+        name: 'Banking Queue 1',
         description: 'Join queue to make Cash Deposit / Withdrawal with teller',
         duration: 10,
         priority: 'Medium',
@@ -23,7 +23,7 @@ const defaultServices = [
     },
     {
         serviceId: 'advising',
-        name: 'Student Advising',
+        name: 'Student Advising Queue 1',
         description: 'Join queue for Course Planning with advisor',
         duration: 30,
         priority: 'High',

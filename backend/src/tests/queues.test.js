@@ -36,7 +36,9 @@ beforeEach(() => {
   jest.clearAllMocks();
   // most tests need a valid service and open queue, set as default
   Service.findOne.mockResolvedValue({ serviceId: "dmv", name: "DMV Queue 1", duration: 15 });
-  Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open" });
+  Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
+  // getQueueList calls Queue.find() for statuses — default to empty list
+  Queue.find.mockResolvedValue([]);
 });
 
 describe("Queue API", () => {
@@ -236,5 +238,123 @@ describe("Queue API", () => {
 
     expect(res.statusCode).toBe(404);
     expect(res.body.message).toBe("User not found");
+  });
+
+  // --- TESTS FOR WAIT TIME ---
+  test("Get wait times for all services", async () => {
+    Service.find.mockResolvedValue([
+      { serviceId: "dmv", name: "DMV Queue 1", duration: 15 },
+      { serviceId: "bank", name: "Banking Queue 1", duration: 10 }
+    ]);
+    QueueEntry.countDocuments.mockResolvedValue(3);
+
+    const res = await request(app).get("/api/queues/wait-time").set("Authorization", `Bearer ${adminToken}`);
+
+    // controller returns flattened: { success: true, dmvWaitTime: X, bankWaitTime: Y }
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.dmvWaitTime).toBe(45);
+    expect(res.body.bankWaitTime).toBe(30);
+  });
+
+  test("Returns zero wait time when queue is empty", async () => {
+    Service.find.mockResolvedValue([
+      { serviceId: "dmv", name: "DMV Queue 1", duration: 15 }
+    ]);
+    QueueEntry.countDocuments.mockResolvedValue(0);
+
+    const res = await request(app).get("/api/queues/wait-time").set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.dmvWaitTime).toBe(0);
+  });
+
+  // --- TESTS FOR QUEUE STATUS ---
+  test("Pause a queue successfully", async () => {
+    // controller mutates queue object then calls queue.save() — mock needs save()
+    Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
+
+    const res = await request(app)
+      .patch("/api/queues/dmv/status")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ action: "pause" });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.status).toBe("paused");
+  });
+
+  test("Close a queue successfully", async () => {
+    Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
+    QueueEntry.deleteMany.mockResolvedValue({ deletedCount: 0 });
+
+    const res = await request(app)
+      .patch("/api/queues/dmv/status")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ action: "close" });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.status).toBe("closed");
+  });
+
+  test("Open a queue successfully", async () => {
+    Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "closed", save: jest.fn().mockResolvedValue({}) });
+
+    const res = await request(app)
+      .patch("/api/queues/dmv/status")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ action: "open" });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.status).toBe("open");
+  });
+
+  test("Returns 400 for invalid queue status action", async () => {
+    const res = await request(app)
+      .patch("/api/queues/dmv/status")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ action: "fly" });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  test("Returns 404 when updating status of non-existent queue", async () => {
+    Queue.findOne.mockResolvedValue(null);
+
+    const res = await request(app)
+      .patch("/api/queues/fakeservice/status")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ action: "close" });
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.success).toBe(false);
+  });
+
+  // --- TESTS FOR RESET ALL QUEUES ---
+  test("Clears all queues successfully", async () => {
+    QueueEntry.deleteMany.mockResolvedValue({ deletedCount: 5 });
+
+    const res = await request(app)
+      .delete("/api/queues/reset")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe("All queues cleared");
+    expect(QueueEntry.deleteMany).toHaveBeenCalled();
+  });
+
+  test("Clears all queues returns success when queues already empty", async () => {
+    QueueEntry.deleteMany.mockResolvedValue({ deletedCount: 0 });
+
+    const res = await request(app)
+      .delete("/api/queues/reset")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
   });
 });
