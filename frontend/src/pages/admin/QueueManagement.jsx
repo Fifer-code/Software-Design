@@ -4,6 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { useContext, useEffect } from 'react';
 import { QueueContext } from '../../context/QueueContext';
 import { getAuthHeaders } from '../../utils/auth';
+import { useNotifications } from '../../context/NotificationContext';
 
 // modular reusable user row with buttons and name
 const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
@@ -65,6 +66,7 @@ const QueueCard = ({ serviceId, title, description, status, usersList, estimated
 function QueueManagement() {
     // backend connection functions
     const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+    const { addNotification } = useNotifications();
 
     useEffect(() => {
         fetchQueueData();
@@ -80,12 +82,14 @@ function QueueManagement() {
             
             if (response.ok) {
                 const data = await response.json();
-                alert(data.message);
+                addNotification(data.message, "success");
                 fetchQueueData();
             } else {
+                addNotification("Failed to serve next user", "warning");
                 console.error("Failed to serve next:", await response.text());
             }
         } catch (error) {
+            addNotification("Error serving next user", "warning");
             console.error("Error serving next user:", error);
         }
     };
@@ -103,12 +107,14 @@ function QueueManagement() {
     
             if (response.ok) {
                 const data = await response.json();
-                alert(data.message);
+                addNotification(data.message, "info");
                 fetchQueueData();
             } else {
+                addNotification("Failed to move user", "warning");
                 console.error("Move failed:", await response.text());
             }
         } catch (error) {
+            addNotification("Error moving user", "warning");
             console.error("Error moving user:", error);
         }
     };
@@ -123,12 +129,14 @@ function QueueManagement() {
             
             if (response.ok) {
                 const data = await response.json();
-                alert(data.message);
+                addNotification(data.message, "info");
                 fetchQueueData();
             } else {
+                addNotification("Failed to remove user", "warning");
                 console.error("Failed to remove:", await response.text());
             }
         } catch (error) {
+            addNotification("Error removing user", "warning");
             console.error("Error removing user:", error);
         }
     };

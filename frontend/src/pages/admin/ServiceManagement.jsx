@@ -3,9 +3,10 @@ import "./ServiceManagement.css";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getAuthHeaders } from "../../utils/auth";
 import { QueueContext } from "../../context/QueueContext";
+import { useNotifications } from "../../context/NotificationContext";
 
 // modular reusable form to edit service
-const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) => {
+const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onNotify }) => {
     const [formData, setFormData] = useState({
         name: initialData.name || "",
         duration: initialData.duration || "",
@@ -42,7 +43,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
                 body: JSON.stringify({ action: actionMap[formData.status] })
             });
 
-            alert(`${formData.name} successfully updated!`);
+            onNotify(`${formData.name} successfully updated!`, "success");
             onRefresh();
         } catch (error) {
             console.error(`Error updating ${title}:`, error);
@@ -57,7 +58,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
                 headers: getAuthHeaders()
             });
             const data = await response.json();
-            alert(data.message);
+            onNotify(data.message, "info");
             onRefresh();
         } catch (error) {
             console.error(`Error deleting ${title}:`, error);
@@ -140,6 +141,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh }) =
 
 function ServiceManagement() {
     const { queueStatuses } = useContext(QueueContext);
+    const { addNotification } = useNotifications();
     const [services, setServices] = useState(null);
 
     const fetchServices = () => {
@@ -186,12 +188,12 @@ function ServiceManagement() {
             });
 
             if (response.ok) {
-                alert("Service successfully created!");
+                addNotification("Service successfully created!", "success");
                 setNewService({ category: '', name: '', description: '', duration: '', priority: '' });
                 fetchServices();
             } else {
                 const err = await response.json();
-                alert(`Failed to create service: ${err.message}`);
+                addNotification(`Failed to create service: ${err.message}`, "warning");
             }
         } catch (error) {
             console.error("Error creating service:", error);
@@ -255,6 +257,7 @@ function ServiceManagement() {
                                         status={queueStatuses?.[service.id] || 'open'}
                                         initialData={service}
                                         onRefresh={fetchServices}
+                                        onNotify={addNotification}
                                     />
                                 ))}
                             </>
