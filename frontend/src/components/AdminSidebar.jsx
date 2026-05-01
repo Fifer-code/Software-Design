@@ -13,7 +13,7 @@ function AdminSidebar() {
       <Sidebar>
         <div className="sidebar-main">
           <div className="sidebar-header">
-            <div className="sidebar-logo">A</div>
+            <div className="sidebar-logo"></div>
             <h2 className="sidebar-title">QueueSmart</h2>
           </div>
 
