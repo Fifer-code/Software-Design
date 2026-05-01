@@ -1,4 +1,5 @@
 const Notification = require('../models/notification');
+const QueueEntry = require('../models/queueEntry');
 
 // called from queueController when a user joins a queue
 const triggerJoinNotification = async (ticketId, name, serviceId) => {
@@ -55,6 +56,40 @@ const markAsViewed = async (req, res) => {
     res.json({ success: true, notification });
 };
 
+// POST /api/notifications/admin — admin sends a custom message to all waiting users in a queue
+const sendAdminNotification = async (req, res) => {
+    try {
+        const { serviceId, message } = req.body;
+
+        if (!serviceId || !message || !message.trim()) {
+            return res.status(400).json({ success: false, message: "Service ID and message are required" });
+        }
+
+        const entries = await QueueEntry.find({ queueId: serviceId, status: 'waiting' });
+        if (entries.length === 0) {
+            return res.status(404).json({ success: false, message: "No users currently in that queue" });
+        }
+
+        const notifications = [];
+        for (const entry of entries) {
+            const notification = await Notification.create({
+                ticketId: entry.ticketId,
+                name: entry.name,
+                serviceId,
+                type: 'admin_message',
+                message: message.trim(),
+                status: 'sent'
+            });
+            console.log(`[ADMIN NOTIFICATION] → ${entry.name} (${entry.ticketId}): ${message.trim()}`);
+            notifications.push(notification);
+        }
+
+        res.json({ success: true, message: `Notification sent to ${notifications.length} user(s)`, notifications });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // used by tests to reset state between runs
 const resetNotifications = async () => {
     await Notification.deleteMany({});
@@ -66,5 +101,6 @@ module.exports = {
     getAllNotifications,
     getNotificationsByTicket,
     markAsViewed,
+    sendAdminNotification,
     resetNotifications
 };

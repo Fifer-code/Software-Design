@@ -14,6 +14,8 @@ import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ServiceManagement from "./pages/admin/ServiceManagement";
 import QueueManagement from "./pages/admin/QueueManagement";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminFeedback from "./pages/admin/AdminFeedback";
 
 /*user routes*/
 import UserSidebar from "./components/UserSidebar";
@@ -65,6 +67,8 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/servicemanagement" element={<ServiceManagement />} />
             <Route path="/admin/queuemanagement" element={<QueueManagement />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/feedback" element={<AdminFeedback />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -35,7 +35,14 @@ const getQueueList = async (req, res) => {
             queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name });
         }
 
-        res.json({ success: true, queues });
+        // include queue status for each service so the frontend can display it
+        const allQueues = await Queue.find();
+        const statuses = {};
+        for (const queue of allQueues) {
+            statuses[queue.serviceId] = queue.status;
+        }
+
+        res.json({ success: true, queues, statuses });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -173,14 +180,21 @@ const joinQueue = async (req, res) => {
             return res.status(404).json({ success: false, message: "Service not found" });
         }
 
+        // block join if queue is paused or closed
+        const queue = await Queue.findOne({ serviceId });
+        if (!queue || queue.status !== 'open') {
+            return res.status(400).json({ success: false, message: `Queue is currently ${queue ? queue.status : 'unavailable'}` });
+        }
+
     const waitingCount = await QueueEntry.countDocuments({
       queueId: serviceId,
       status: 'waiting'
     });
 
-    // generate ticket ID
+    // generate ticket ID — use total count (all statuses) to avoid duplicates after serve/remove
+    const totalCount = await QueueEntry.countDocuments({ queueId: serviceId });
     const prefix = serviceId.charAt(0).toUpperCase();
-    const ticketNumber = waitingCount + 1;
+    const ticketNumber = totalCount + 1;
     const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
 
     const newEntry = await QueueEntry.create({
@@ -211,9 +225,53 @@ const joinQueue = async (req, res) => {
   }
 };
 
+// toggle pause/unpause or explicitly close/open a queue
+const updateQueueStatus = async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { action } = req.body;
+
+        const validActions = ['toggle', 'close', 'open', 'pause'];
+        if (!validActions.includes(action)) {
+            return res.status(400).json({ success: false, message: "Invalid action" });
+        }
+
+        const queue = await Queue.findOne({ serviceId });
+        if (!queue) {
+            return res.status(404).json({ success: false, message: "Queue not found" });
+        }
+
+        if (action === 'toggle') {
+            queue.status = queue.status === 'paused' ? 'open' : 'paused';
+        } else if (action === 'pause') {
+            queue.status = 'paused';
+        } else if (action === 'close') {
+            queue.status = 'closed';
+            await QueueEntry.deleteMany({ queueId: serviceId, status: 'waiting' });
+        } else if (action === 'open') {
+            queue.status = 'open';
+        }
+
+        await queue.save();
+        res.json({ success: true, message: `Queue ${serviceId} is now ${queue.status}`, status: queue.status });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// clears all waiting entries across every queue — intended as an end-of-day action
+const clearAllQueues = async (req, res) => {
+    try {
+        await QueueEntry.deleteMany({ status: 'waiting' });
+        res.json({ success: true, message: "All queues cleared" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // used by tests to reset queue state between runs
 const resetQueues = async () => {
     await QueueEntry.deleteMany({});
 };
 
-module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues };
+module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues, updateQueueStatus, clearAllQueues };

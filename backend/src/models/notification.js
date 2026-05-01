@@ -18,7 +18,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['joined', 'near_front'],
+        enum: ['joined', 'near_front', 'admin_message'],
         required: [true, 'Notification type is required']
     },
     message: {

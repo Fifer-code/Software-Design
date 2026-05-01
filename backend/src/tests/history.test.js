@@ -73,6 +73,49 @@ describe("History API", () => {
         });
     });
 
+    describe("GET /api/history/report", () => {
+        test("returns stats and history for the report", async () => {
+            const now = new Date();
+            const fiveMinAgo = new Date(now - 5 * 60 * 1000);
+
+            const mockHistory = [
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "joined", timestamp: fiveMinAgo },
+                { ticketId: "D001", name: "Alice", serviceId: "dmv", event: "served", timestamp: now },
+                { ticketId: "D002", name: "Bob", serviceId: "dmv", event: "joined", timestamp: fiveMinAgo },
+                { ticketId: "D002", name: "Bob", serviceId: "dmv", event: "removed", timestamp: now }
+            ];
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue(mockHistory) });
+
+            const res = await request(app).get("/api/history/report").set("Authorization", `Bearer ${adminToken}`);
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.history).toHaveLength(4);
+            expect(Array.isArray(res.body.stats)).toBe(true);
+            expect(res.body.stats[0].serviceId).toBe("dmv");
+            expect(res.body.stats[0].joined).toBe(2);
+            expect(res.body.stats[0].served).toBe(1);
+            expect(res.body.stats[0].removed).toBe(1);
+        });
+
+        test("returns empty stats when no history exists", async () => {
+            History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
+
+            const res = await request(app).get("/api/history/report").set("Authorization", `Bearer ${adminToken}`);
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.history).toHaveLength(0);
+            expect(res.body.stats).toHaveLength(0);
+        });
+
+        test("returns 500 on database error", async () => {
+            History.find.mockReturnValue({ sort: jest.fn().mockRejectedValue(new Error("DB error")) });
+
+            const res = await request(app).get("/api/history/report").set("Authorization", `Bearer ${adminToken}`);
+            expect(res.statusCode).toBe(500);
+            expect(res.body.success).toBe(false);
+        });
+    });
+
     describe("History trigger functions", () => {
         test("recordJoin creates a joined history entry in DB", async () => {
             const { recordJoin } = require("../controllers/historyController");

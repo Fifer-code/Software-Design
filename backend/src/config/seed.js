@@ -8,31 +8,27 @@ const defaultServices = [
     {
         serviceId: 'dmv',
         name: 'DMV Queue 1',
-        description: 'Standard DMV services',
+        description: 'Join queue to renew Drivers License with clerk',
         duration: 15,
-        priority: 'Low'
+        priority: 'Low',
+        category: 'DMV'
     },
     {
         serviceId: 'bank',
         name: 'Banking Queue 1',
-        description: 'Teller services',
+        description: 'Join queue to make Cash Deposit / Withdrawal with teller',
         duration: 10,
-        priority: 'Medium'
+        priority: 'Medium',
+        category: 'Banking'
     },
     {
         serviceId: 'advising',
         name: 'Student Advising Queue 1',
-        description: 'Course planning',
+        description: 'Join queue for Course Planning with advisor',
         duration: 30,
-        priority: 'High'
+        priority: 'High',
+        category: 'Student Advising'
     },
-    {
-        serviceId: 'placeholder',
-        name: 'placeholder',
-        description: 'placeholder description',
-        duration: 5,
-        priority: 'Low'
-    }
 ];
 
 const testAccounts = [

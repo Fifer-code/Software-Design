@@ -134,3 +134,31 @@ a{
 .admin-subcard p, textarea{
     margin-bottom: 5px;
 }
+
+.admin-card-3 .admin-subcard,
+.admin-card-3 .admin-subcard-tall,
+.admin-card-3 .admin-subcard-short {
+    flex: none;
+}
+
+.admin-subcard-short .action-btn {
+    margin-top: 0;
+}
+
+.admin-card-3 select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.action-btn {
+    background-color: var(--main-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    margin-top: 8px;
+    width: 100%;
+}

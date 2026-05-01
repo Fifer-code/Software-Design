@@ -22,6 +22,8 @@ function AdminSidebar() {
               <MenuItem component={<NavLink to="/admin/dashboard" />}>Dashboard</MenuItem>
               <MenuItem component={<NavLink to="/admin/queuemanagement" />}>Queue Management</MenuItem>
               <MenuItem component={<NavLink to="/admin/servicemanagement" />}>Service Management</MenuItem>
+              <MenuItem component={<NavLink to="/admin/reports" />}>Reports</MenuItem>
+              <MenuItem component={<NavLink to="/admin/feedback" />}>Feedback</MenuItem>
             </Menu>
           </div>
 

@@ -5,9 +5,11 @@ const serviceRoutes = require("../routes/serviceRoutes");
 
 jest.mock("../models/service");
 jest.mock("../models/queue");
+jest.mock("../models/queueEntry");
 
 const Service = require("../models/service");
 const Queue = require("../models/queue");
+const QueueEntry = require("../models/queueEntry");
 
 const app = express();
 app.use(express.json());
@@ -104,5 +106,32 @@ describe("Services API", () => {
     expect(res.statusCode).toBe(404);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe("Service not found");
+  });
+
+  test("should delete a service successfully", async () => {
+    Service.findOneAndDelete.mockResolvedValue({ serviceId: "dmv", name: "DMV Queue 1" });
+    Queue.deleteMany.mockResolvedValue({ deletedCount: 1 });
+    QueueEntry.deleteMany.mockResolvedValue({ deletedCount: 2 });
+
+    const res = await request(app)
+      .delete("/api/services/dmv")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Service.findOneAndDelete).toHaveBeenCalled();
+    expect(Queue.deleteMany).toHaveBeenCalled();
+    expect(QueueEntry.deleteMany).toHaveBeenCalled();
+  });
+
+  test("should return 404 when deleting a non-existent service", async () => {
+    Service.findOneAndDelete.mockResolvedValue(null);
+
+    const res = await request(app)
+      .delete("/api/services/fakeID999")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.success).toBe(false);
   });
 });
