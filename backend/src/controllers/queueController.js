@@ -6,21 +6,72 @@ const { recordJoin, recordServed, recordRemoved } = require('./historyController
 
 // time for entire queue mainly for admin purposes
 const getWaitTime = async (req, res) => {
-    try {
-        const services = await Service.find();
-        const waitTimes = {};
+  try {
+    const services = await Service.find();
+    const history = await require('../models/history').find({
+      event: { $in: ['joined', 'served'] }
+    }).sort({ timestamp: 1 });
 
-        // loop through each service and count how many people are waiting
-        for (const service of services) {
-            const count = await QueueEntry.countDocuments({ queueId: service.serviceId, status: 'waiting' });
-            waitTimes[`${service.serviceId}WaitTime`] = count * service.duration;
+    const waitTimes = {};
+
+    for (const service of services) {
+      const waitingCount = await QueueEntry.countDocuments({
+        queueId: service.serviceId,
+        status: 'waiting'
+      });
+
+      const serviceHistory = history.filter(
+        h => h.serviceId === service.serviceId
+      );
+
+      const joinedMap = new Map();
+      const historicalWaits = [];
+
+      for (const record of serviceHistory) {
+        if (record.event === 'joined') {
+          joinedMap.set(record.ticketId, record.timestamp);
         }
 
-        res.json({ success: true, ...waitTimes });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        if (record.event === 'served' && joinedMap.has(record.ticketId)) {
+          const joinedAt = joinedMap.get(record.ticketId);
+          const waitMinutes = (new Date(record.timestamp) - new Date(joinedAt)) / 60000;
+
+          if (waitMinutes >= 0) {
+            historicalWaits.push(waitMinutes);
+          }
+        }
+      }
+
+       const recentWaits = historicalWaits.slice(-10);
+        
+
+        const minSamples = 1; 
+
+        const historicalAverage =
+        recentWaits.length >= minSamples
+            ? recentWaits.reduce((sum, w) => sum + w, 0) / recentWaits.length
+            : null;
+
+
+        const fallbackDuration = Number(service.duration) || 10; 
+        const estimatedPerPerson = historicalAverage || fallbackDuration;
+        
+        const totalEstimatedWait = Math.round(waitingCount * estimatedPerPerson);
+
+      waitTimes[service.serviceId] = {
+        waitingCount,
+        estimatedPerPersonMinutes: Math.round(estimatedPerPerson),
+        totalEstimatedWaitMinutes: totalEstimatedWait,
+        source: historicalAverage ? 'historical' : 'default-duration'
+      };
     }
+
+    res.json({ success: true, waitTimes });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
+
 
 // get all queues
 const getQueueList = async (req, res) => {

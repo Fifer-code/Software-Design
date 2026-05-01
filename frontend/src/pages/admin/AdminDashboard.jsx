@@ -5,10 +5,12 @@ import personIcon from '../../assets/person.svg';
 import { useContext, useEffect, useState } from 'react';
 import { getAuthHeaders } from '../../utils/auth';
 import { QueueContext } from '../../context/QueueContext';
+import { useNotifications } from '../../context/NotificationContext';
 
 function AdminDashboard() {
     // backend connection functions
-    const { queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+    const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+    const { addNotification } = useNotifications();
 
     const [selectedServiceId, setSelectedServiceId] = useState('');
     const [notifyMessage, setNotifyMessage] = useState('');
@@ -27,9 +29,10 @@ function AdminDashboard() {
                 body: JSON.stringify({ action: 'toggle' })
             });
             const data = await res.json();
-            alert(data.message);
+            addNotification(data.message, "info");
             fetchQueueData();
         } catch (err) {
+            addNotification("Failed to pause/unpause queue", "warning");
             console.error("Pause/Unpause failed:", err);
         }
     };
@@ -43,9 +46,10 @@ function AdminDashboard() {
                 body: JSON.stringify({ action: 'close' })
             });
             const data = await res.json();
-            alert(data.message);
+            addNotification(data.message, "info");
             fetchQueueData();
         } catch (err) {
+            addNotification("Failed to close queue", "warning");
             console.error("Close failed:", err);
         }
     };
@@ -59,9 +63,10 @@ function AdminDashboard() {
                 body: JSON.stringify({ action: 'open' })
             });
             const data = await res.json();
-            alert(data.message);
+            addNotification(data.message, "info");
             fetchQueueData();
         } catch (err) {
+            addNotification("Failed to open queue", "warning");
             console.error("Open failed:", err);
         }
     };
@@ -76,8 +81,8 @@ function AdminDashboard() {
             });
             const data = await res.json();
             console.log('[SEND NOTIFICATION]', data);
-            alert(data.message);
-                setNotifyMessage('');
+            addNotification(data.message, "success");
+            setNotifyMessage('');
         } catch (err) {
             console.error("Send notification failed:", err);
         }
@@ -91,9 +96,10 @@ function AdminDashboard() {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
-            alert(data.message);
+            addNotification(data.message, "info");
             fetchQueueData();
         } catch (err) {
+            addNotification("Failed to clear queues", "warning");
             console.error("Clear all failed:", err);
         }
     };

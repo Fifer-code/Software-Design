@@ -12,6 +12,8 @@ function QueueStatus() {
   const [ticket, setTicket] = useState(null);
   const [position, setPosition] = useState(null);
   const [queueLength, setQueueLength] = useState(0);
+  const [estimatedWait, setEstimatedWait] = useState(null);
+
 
   // tracks which backend notification IDs have already been shown as toasts
   const seenNotifIds = useRef(new Set());
@@ -31,6 +33,7 @@ function QueueStatus() {
         const res = await axios.get("http://localhost:8080/api/queues", {
           headers: getAuthHeaders()
         });
+
         const queues = res.data.queues || {};
         const serviceQueue = queues[ticket.serviceId] || [];
 
@@ -38,13 +41,41 @@ function QueueStatus() {
           (u) => u.ticketId === ticket.ticketId
         );
 
-        setPosition(index === -1 ? null : index + 1);
+        const currentPosition = index === -1 ? null : index + 1;
+
+        setPosition(currentPosition);
         setQueueLength(serviceQueue.length);
 
+        await fetchWaitTime(currentPosition);
       } catch (err) {
         console.error(err);
       }
     };
+
+
+    const fetchWaitTime = async (currentPosition) => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/queues/wait-time", {
+          headers: getAuthHeaders()
+        });
+
+        const serviceWait = res.data.waitTimes?.[ticket.serviceId];
+
+        if (!serviceWait || currentPosition == null) {
+          setEstimatedWait(null);
+          return;
+        }
+
+        const perPerson = serviceWait.estimatedPerPersonMinutes ?? 0;
+        const userWait = Math.max(0, (currentPosition - 1) * perPerson);
+
+        setEstimatedWait(userWait);
+      } catch (err) {
+        console.error(err);
+        setEstimatedWait(null);
+      }
+    };
+
 
     // poll backend notifications and show any unseen ones as toasts
     const fetchNotifications = async (ticketId) => {
@@ -54,8 +85,8 @@ function QueueStatus() {
         });
         const notifications = res.data.notifications || [];
         notifications.forEach((notif) => {
-          if (!seenNotifIds.current.has(notif.id)) {
-            seenNotifIds.current.add(notif.id);
+          if (!seenNotifIds.current.has(notif._id)) {
+            seenNotifIds.current.add(notif._id);
             if (notif.type === "near_front") {
               addNotification(notif.message, "warning");
             } else if (notif.type === "joined") {
@@ -136,7 +167,9 @@ function QueueStatus() {
       : "Unknown";
 
   const estimatedWaitLabel =
-    ticket?.estimatedWait != null ? ticket.estimatedWait : "N/A";
+    estimatedWait != null ? estimatedWait : "N/A";
+
+
 
   const statusLabel =
     position === 1 ? "You're next!" : ticket?.status || "Unknown";
