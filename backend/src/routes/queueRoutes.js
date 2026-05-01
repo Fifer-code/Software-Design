@@ -20,7 +20,7 @@ router.post('/:serviceId/serve', authenticateToken, authorizeRoles('admin'), ser
 router.patch('/:serviceId/:ticketId/move', authenticateToken, authorizeRoles('admin'), moveUser);
 
 // delete based off remove user button in QueueManagement
-router.delete('/:serviceId/:ticketId', authenticateToken, authorizeRoles('admin'), removeUser);
+router.delete('/:serviceId/:ticketId', authenticateToken, authorizeRoles('user', 'admin'), removeUser);
 
 // join queue based off join queue button in UserDashboard
 router.post('/:serviceId/join', authenticateToken, authorizeRoles('user', 'admin'), joinQueue);
