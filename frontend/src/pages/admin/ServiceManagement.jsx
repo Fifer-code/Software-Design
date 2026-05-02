@@ -5,6 +5,12 @@ import { getAuthHeaders } from "../../utils/auth";
 import { QueueContext } from "../../context/QueueContext";
 import { useNotifications } from "../../context/NotificationContext";
 
+const ServiceOptions = {
+  DMV: ["License Renewal", "ID Registration", "Title Transfers", "Take Driver's Test"],
+  Banking: ["Cash Deposits / Withdrawals", "Open New Account", "Apply for a Loan", "Debit/Credit Card Replacement"],
+  "Student Advising": ["Course Planning", "Drop or Add Classes", "Financial Aid Counseling", "Transcript Requests"]
+};
+
 // Service edit form (uses notifications internally)
 const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
     const { addNotification } = useNotifications();
@@ -18,8 +24,13 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const { name, value } = e.target;
+    if (name === "category") {
+        setFormData({ ...formData, category: value, name: "" });
+    } else {
+        setFormData({ ...formData, [name]: value });
+    }
+};
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -72,13 +83,20 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                 <div className="edit-left">
                     <div className="form-group">
                         <label>Service Name: </label>
-                        <input
-                            type="text"
+                        <select
                             name="name"
-                            required maxLength="100"
+                            required
                             value={formData.name}
                             onChange={handleChange}
-                        />
+                            disabled={!formData.category}
+                        >
+                            <option value="" disabled hidden>
+                                {formData.category ? "Select Service" : "Choose Category First"}
+                            </option>
+                            {formData.category && ServiceOptions[formData.category].map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="form-group">
                         <label>Expected Duration: </label>
@@ -169,8 +187,13 @@ function ServiceManagement() {
     });
 
     const handleNewServiceChange = (e) => {
-        setNewService({ ...newService, [e.target.name]: e.target.value });
-    };
+    const { name, value } = e.target;
+    if (name === "category") {
+        setNewService({ ...newService, category: value, name: "" });
+    } else {
+        setNewService({ ...newService, [name]: value });
+    }
+};
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -201,21 +224,39 @@ function ServiceManagement() {
     };
 
     const createCard = (
-        <div className="admin-card-1">
-            <form className="admin-create-form" onSubmit={handleCreate}>
-                <div className="form-group">
-                    <label>Service Category:</label>
-                    <select name="category" value={newService.category} onChange={handleNewServiceChange} required>
-                        <option value="" disabled hidden></option>
-                        <option value="DMV">DMV</option>
-                        <option value="Banking">Banking</option>
-                        <option value="Student Advising">Student Advising</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Queue Name:</label>
-                    <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
-                </div>
+    <div className="admin-card-1">
+        <form className="admin-create-form" onSubmit={handleCreate}>
+            <div className="form-group">
+                <label>Service Category:</label>
+                <select 
+                    name="category" 
+                    value={newService.category} 
+                    onChange={handleNewServiceChange} 
+                    required
+                >
+                    <option value="" disabled hidden>Select Category</option>
+                    {Object.keys(ServiceOptions).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="form-group">
+                <label>Service:</label>
+                <select 
+                    name="name" 
+                    value={newService.name} 
+                    onChange={handleNewServiceChange} 
+                    required 
+                    disabled={!newService.category}
+                >
+                    <option value="" disabled hidden>
+                        {newService.category ? "Select Service" : "Choose Category First"}
+                    </option>
+                    {newService.category && ServiceOptions[newService.category].map(option => (
+                        <option key={option} value={option}>{option}</option>
+                    ))}
+                </select>
+            </div>
                 <div className="form-group">
                     <label>Description:</label>
                     <textarea rows="5" name="description" value={newService.description} onChange={handleNewServiceChange} required></textarea>
@@ -242,7 +283,7 @@ function ServiceManagement() {
         <div className="admin-card-2">
             <div className="service-table-shell">
                 <div className="service-table-header">
-                    <div className="service-col service-col-name">Queue Name</div>
+                    <div className="service-col service-col-name">Service</div>
                     <div className="service-col">Duration</div>
                     <div className="service-col">Category</div>
                     <div className="service-col">Priority</div>
