@@ -30,7 +30,7 @@ const createService = async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const service = await Service.create({ serviceId: id, name, description, duration, priority, category });
+        const service = await Service.create({ serviceId: id, name, description, duration, priority, category, ticketCounter: 0 });
 
         // create an open queue for this service (assignment requirement: Queue tracks status per service)
         await Queue.create({ serviceId: id, status: 'open' });

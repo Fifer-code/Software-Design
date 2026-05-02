@@ -30,6 +30,10 @@ const serviceSchema =  new mongoose.Schema(
         category:{
             type: String,
             enum: ['DMV', 'Banking', 'Student Advising']
+        },
+        ticketCounter:{
+            type: Number,
+            default: 0
         }
     },
     {

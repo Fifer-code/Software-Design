@@ -5,8 +5,9 @@ import { getAuthHeaders } from "../../utils/auth";
 import { QueueContext } from "../../context/QueueContext";
 import { useNotifications } from "../../context/NotificationContext";
 
-// modular reusable form to edit service
-const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onNotify }) => {
+// Service edit form (uses notifications internally)
+const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
+    const { addNotification } = useNotifications();
     const [formData, setFormData] = useState({
         name: initialData.name || "",
         duration: initialData.duration || "",
@@ -16,12 +17,10 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onN
         status: status || "open"
     });
 
-    // updates form fields
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // connects to the backend to update the specific service by id
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -43,8 +42,9 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onN
                 body: JSON.stringify({ action: actionMap[formData.status] })
             });
 
-            onNotify(`${formData.name} successfully updated!`, "success");
+            addNotification(`${formData.name} successfully updated!`, "success");
             onRefresh();
+            onClose();
         } catch (error) {
             console.error(`Error updating ${title}:`, error);
         }
@@ -58,19 +58,16 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onN
                 headers: getAuthHeaders()
             });
             const data = await response.json();
-            onNotify(data.message, "info");
+            addNotification(data.message, "info");
             onRefresh();
+            onClose();
         } catch (error) {
             console.error(`Error deleting ${title}:`, error);
         }
     };
 
     return (
-        <div className="admin-subcard">
-            <div className="subcard-header">
-                <h3>{title}</h3>
-                <button type="button" className="delete-btn" onClick={handleDelete}>Delete</button>
-            </div>
+        <div className="service-edit-expanded">
             <form className="admin-edit-form" onSubmit={handleSubmit}>
                 <div className="edit-left">
                     <div className="form-group">
@@ -132,7 +129,11 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onN
                             <option value="Low">Low</option>
                         </select>
                     </div>
-                    <button type="submit" className="save-btn">Save</button>
+                    <div className="edit-form-actions">
+                        <button type="submit" className="save-btn">Save</button>
+                        <button type="button" className="delete-btn" onClick={handleDelete}>Delete</button>
+                        <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -143,6 +144,8 @@ function ServiceManagement() {
     const { queueStatuses } = useContext(QueueContext);
     const { addNotification } = useNotifications();
     const [services, setServices] = useState(null);
+    const [expandedId, setExpandedId] = useState(null);
+    const [activeView, setActiveView] = useState('edit'); // 'create' or 'edit'
 
     const fetchServices = () => {
         fetch('http://localhost:8080/api/services', {
@@ -157,7 +160,6 @@ function ServiceManagement() {
         fetchServices();
     }, []);
 
-    // needed for create service form
     const [newService, setNewService] = useState({
         category: '',
         name: '',
@@ -166,12 +168,10 @@ function ServiceManagement() {
         priority: ''
     });
 
-    // update service
     const handleNewServiceChange = (e) => {
         setNewService({ ...newService, [e.target.name]: e.target.value });
     };
 
-    // connect to backend and store to display
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
@@ -200,72 +200,128 @@ function ServiceManagement() {
         }
     };
 
-    return (
-        <div className="admin-layout">
-            <AdminSidebar />
-            <div className="admin-shell">
-                <h2>Service Management</h2>
-                <div className="admin-card-container">
-                    <div className="admin-card-1">
-                        <h1>Create Queue</h1>
-                        <p>Create Brand New Custom Queue</p>
-                        <form className="admin-create-form" onSubmit={handleCreate}>
-                            <div className="form-group">
-                                <label>Service Category:</label>
-                                <select name="category" value={newService.category} onChange={handleNewServiceChange} required>
-                                    <option value="" disabled hidden></option>
-                                    <option value="DMV">DMV</option>
-                                    <option value="Banking">Banking</option>
-                                    <option value="Student Advising">Student Advising</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Queue Name:</label>
-                                <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
-                            </div>
-                            <div className="form-group">
-                                <label>Description:</label>
-                                <textarea rows="5" name="description" value={newService.description} onChange={handleNewServiceChange} required></textarea>
-                            </div>
-                            <div className="form-group">
-                                <label>Expected Duration:</label>
-                                <input type="number" name="duration" value={newService.duration} onChange={handleNewServiceChange} required min="1" />
-                            </div>
-                            <div className="form-group">
-                                <label>Priority: </label>
-                                <select name="priority" value={newService.priority} onChange={handleNewServiceChange} required>
-                                    <option value="" disabled hidden></option>
-                                    <option value="High">High</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Low">Low</option>
-                                </select>
-                            </div>
-                            <button type="submit">Create New Service</button>
-                        </form>
-                    </div>
+    const createCard = (
+        <div className="admin-card-1">
+            <form className="admin-create-form" onSubmit={handleCreate}>
+                <div className="form-group">
+                    <label>Service Category:</label>
+                    <select name="category" value={newService.category} onChange={handleNewServiceChange} required>
+                        <option value="" disabled hidden></option>
+                        <option value="DMV">DMV</option>
+                        <option value="Banking">Banking</option>
+                        <option value="Student Advising">Student Advising</option>
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label>Queue Name:</label>
+                    <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
+                </div>
+                <div className="form-group">
+                    <label>Description:</label>
+                    <textarea rows="5" name="description" value={newService.description} onChange={handleNewServiceChange} required></textarea>
+                </div>
+                <div className="form-group">
+                    <label>Expected Duration:</label>
+                    <input type="number" name="duration" value={newService.duration} onChange={handleNewServiceChange} required min="1" />
+                </div>
+                <div className="form-group">
+                    <label>Priority: </label>
+                    <select name="priority" value={newService.priority} onChange={handleNewServiceChange} required>
+                        <option value="" disabled hidden></option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <button type="submit">Create New Service</button>
+            </form>
+        </div>
+    );
 
-                    <div className="admin-card-2">
-                        <h1>Edit Queue</h1>
-                        <p>Modify Existing Queue</p>
-                        {services ? (
-                            <>
-                                {services.map((service) => (
+    const editCard = (
+        <div className="admin-card-2">
+            <div className="service-table-shell">
+                <div className="service-table-header">
+                    <div className="service-col service-col-name">Queue Name</div>
+                    <div className="service-col">Duration</div>
+                    <div className="service-col">Category</div>
+                    <div className="service-col">Priority</div>
+                    <div className="service-col">Status</div>
+                    <div className="service-col service-col-action">Action</div>
+                </div>
+                <div className="service-table-body">
+                    {services ? (
+                        services.map((service) => (
+                            <div key={service.id}>
+                                <div className="service-row">
+                                    <div className="service-col service-col-name">
+                                        <div className="service-name">{service.name}</div>
+                                        <div className="service-desc">{service.description}</div>
+                                    </div>
+                                    <div className="service-col">{service.duration} min</div>
+                                    <div className="service-col">{service.category || "—"}</div>
+                                    <div className="service-col">
+                                        <span className={`service-chip service-priority-${service.priority?.toLowerCase() || 'low'}`}>
+                                            {service.priority || "Low"}
+                                        </span>
+                                    </div>
+                                    <div className="service-col">
+                                        <span className={`service-chip service-status-${queueStatuses?.[service.id]?.toLowerCase() || 'open'}`}>
+                                            {queueStatuses?.[service.id] || "open"}
+                                        </span>
+                                    </div>
+                                    <div className="service-col service-col-action">
+                                        <button
+                                            type="button"
+                                            className="edit-btn"
+                                            onClick={() => setExpandedId(expandedId === service.id ? null : service.id)}
+                                        >
+                                            {expandedId === service.id ? "Close" : "Edit"}
+                                        </button>
+                                    </div>
+                                </div>
+                                {expandedId === service.id && (
                                     <ServiceEditForm
-                                        key={service.id}
                                         serviceId={service.id}
                                         title={service.name}
                                         status={queueStatuses?.[service.id] || 'open'}
                                         initialData={service}
                                         onRefresh={fetchServices}
-                                        onNotify={addNotification}
+                                        onClose={() => setExpandedId(null)}
                                     />
-                                ))}
-                            </>
-                        ) : (
-                            <p>Loading services...</p>
-                        )}
-                    </div>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="service-loading">Loading services...</div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 
+    return (
+        <div className="admin-layout">
+            <AdminSidebar />
+            <div className="admin-shell">
+                <h2>Service Management</h2>
+                <div className="view-toggle-buttons">
+                    <button
+                        className={`toggle-btn ${activeView === 'create' ? 'active' : ''}`}
+                        onClick={() => setActiveView('create')}
+                    >
+                        Create Queue
+                    </button>
+                    <button
+                        className={`toggle-btn ${activeView === 'edit' ? 'active' : ''}`}
+                        onClick={() => setActiveView('edit')}
+                    >
+                        Edit Queue
+                    </button>
+                </div>
+                <div className="admin-card-container">
+                    {activeView === 'create' ? createCard : null}
+                    {activeView === 'edit' ? editCard : null}
                 </div>
             </div>
         </div>

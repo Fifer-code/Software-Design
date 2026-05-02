@@ -143,54 +143,78 @@ function AdminReports() {
                     </div>
                 </div>
 
-                {/* stat card per service — shows all services, even ones with no activity yet */}
-                <div className="reports-stats-row">
-                    {services.map((service) => {
-                        const s = stats[service.id] || { joined: 0, served: 0, removed: 0, avgWaitMinutes: null };
-                        return (
-                            <div key={service.id} className="report-stat-card">
-                                <h3>{service.name}</h3>
-                                <div className="report-stat-grid">
-                                    <p>Joined: <span>{s.joined}</span></p>
-                                    <p>Served: <span>{s.served}</span></p>
-                                    <p>Removed: <span>{s.removed}</span></p>
-                                    <p>Avg Wait: <span>{s.avgWaitMinutes !== null ? `${s.avgWaitMinutes} min` : 'N/A'}</span></p>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <div className="reports-table-card">
-                    <h3>Queue Activity Log</h3>
-                    {history.length === 0 ? (
-                        <p>No history recorded yet.</p>
-                    ) : (
-                        <table className="reports-table">
-                            <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>Queue Name</th>
-                                    <th>Name</th>
-                                    <th>Ticket ID</th>
-                                    <th>Event</th>
-                                    <th>Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.map((entry, i) => (
-                                    <tr key={i}>
-                                        <td>{serviceCategories[entry.serviceId] || entry.serviceId}</td>
-                                        <td>{serviceNames[entry.serviceId] || entry.serviceId}</td>
-                                        <td>{entry.name}</td>
-                                        <td>{entry.ticketId}</td>
-                                        <td className={`event-${entry.event}`}>{entry.event}</td>
-                                        <td>{new Date(entry.timestamp).toLocaleString()}</td>
+                <div className="reports-tables-container">
+                    <div className="reports-table-card reports-summary-card">
+                        <div className="reports-card-header">
+                            <h3>Queue Summary</h3>
+                        </div>
+                        <div className="reports-card-body">
+                            <table className="reports-table reports-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Queue</th>
+                                        <th>Joined</th>
+                                        <th>Served</th>
+                                        <th>Removed</th>
+                                        <th>Avg Wait</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
+                                </thead>
+                                <tbody>
+                                    {services.map((service) => {
+                                        const s = stats[service.id] || { joined: 0, served: 0, removed: 0, avgWaitMinutes: null };
+                                        return (
+                                            <tr key={service.id}>
+                                                <td>
+                                                    <div className="reports-queue-name">{service.name}</div>
+                                                    <div className="reports-queue-category">{service.category || "Uncategorized"}</div>
+                                                </td>
+                                                <td>{s.joined}</td>
+                                                <td>{s.served}</td>
+                                                <td>{s.removed}</td>
+                                                <td>{s.avgWaitMinutes !== null ? `${s.avgWaitMinutes} min` : "N/A"}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="reports-table-card reports-activity-card">
+                        <div className="reports-card-header">
+                            <h3>Queue Activity Log</h3>
+                        </div>
+                        <div className="reports-card-body">
+                            {history.length === 0 ? (
+                                <p>No history recorded yet.</p>
+                            ) : (
+                                <table className="reports-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Queue Name</th>
+                                            <th>Name</th>
+                                            <th>Ticket ID</th>
+                                            <th>Event</th>
+                                            <th>Timestamp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.map((entry, i) => (
+                                            <tr key={i}>
+                                                <td>{serviceCategories[entry.serviceId] || entry.serviceId}</td>
+                                                <td>{serviceNames[entry.serviceId] || entry.serviceId}</td>
+                                                <td>{entry.name}</td>
+                                                <td>{entry.ticketId}</td>
+                                                <td className={`event-${entry.event}`}>{entry.event}</td>
+                                                <td>{new Date(entry.timestamp).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

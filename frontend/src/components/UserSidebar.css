@@ -2,22 +2,31 @@
 
 /* Main layout container - holds sidebar and main content side by side */
 .sidebar-layout {
+	/* Scoped fixed color variables for the user sidebar */
+	--usb-bg: #0d1117;
+	--usb-border: #30363d;
+	--usb-card: #161b22;
+	--usb-ink: #ffffff;
+	--usb-muted: #5f6b72;
+	--usb-accent: #1f4c8f;
+	--usb-accent-2: #1f4c8f;
+
 	display: flex;
 	height: 100vh;
-	background: var(--main-bg) !important;
+	background: var(--usb-bg) !important;
 }
 
 /* React-pro-sidebar root container - the sidebar itself */
 .ps-sidebar-root {
-	background: var(--main-bg) !important;
-	border-right: 1px solid var(--main-border) !important;
+	background: var(--usb-bg) !important;
+	border-right: 1px solid var(--usb-border) !important;
 	box-shadow: 4px 0 24px rgba(29, 36, 41, 0.08) !important;
 	transition: width 300ms ease !important;
 }
 
 /* Override library's scoped CSS class for sidebar background */
 .ps-sidebar-root [class*="css-"] {
-	background: var(--main-bg) !important;
+	background: var(--usb-bg) !important;
 }
 
 /* Main wrapper inside sidebar - contains menu and footer */
@@ -35,7 +44,7 @@
 	align-items: center;
 	gap: 12px;
 	padding: 20px 16px;
-	border-bottom: 1px solid var(--main-border);
+	border-bottom: 1px solid var(--usb-border);
 	flex-shrink: 0;
 }
 
@@ -44,7 +53,7 @@
 	margin: 0;
 	font-size: 1.3rem;
 	font-weight: 700;
-	color: var(--main-ink);
+	color: var(--usb-ink);
 	letter-spacing: -0.02em;
 }
 
@@ -72,7 +81,7 @@
 .ps-menu-button {
 	padding: 12px 16px !important;
 	border-radius: 12px !important;
-	color: var(--main-ink) !important;
+	color: var(--usb-ink) !important;
 	font-size: 0.95rem !important;
 	font-weight: 500 !important;
 	transition: all 150ms ease !important;
@@ -82,8 +91,8 @@
 
 /* Menu button hover state - subtle gradient and color change */
 .ps-menu-button:hover {
-	background: linear-gradient(135deg, rgba(31, 122, 122, 0.08), rgba(31, 122, 122, 0.12)) !important;
-	color: var(--main-accent) !important;
+	background: linear-gradient(135deg, rgba(31, 76, 143, 0.08), rgba(31, 76, 143, 0.12)) !important;
+	color: var(--usb-accent) !important;
 	transform: translateX(2px);
 }
 
@@ -97,9 +106,9 @@
 .ps-active > .ps-menu-button,
 .ps-menuitem-root a.active ~ .ps-menu-button,
 .ps-menuitem-root:has(a.active) .ps-menu-button {
-	background: linear-gradient(135deg, var(--main-accent), var(--main-accent-2)) !important;
+	background: linear-gradient(135deg, var(--usb-accent), var(--usb-accent-2)) !important;
 	color: #fff !important;
-	box-shadow: 0 4px 12px rgba(31, 122, 122, 0.2);
+	box-shadow: 0 4px 12px rgba(31, 76, 143, 0.2);
 }
 
 /* Remove library backgrounds from active button children */
@@ -115,11 +124,11 @@
 	flex-shrink: 0;
 	margin-top: auto;
 	padding: 16px;
-	border-top: 1px solid var(--main-border);
+	border-top: 1px solid var(--usb-border);
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	background: var(--main-card);
+	background: var(--usb-card);
 	position: relative;
 	z-index: 1;
 }
@@ -129,8 +138,8 @@
 	width: 36px;
 	height: 36px;
 	border-radius: 50%;
-	background: linear-gradient(135deg, var(--main-accent), #2e9a9a);
-	box-shadow: 0 2px 8px rgba(31, 122, 122, 0.2);
+	background: linear-gradient(135deg, var(--usb-accent), var(--usb-accent-2));
+	box-shadow: 0 2px 8px rgba(31, 76, 143, 0.2);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -144,7 +153,7 @@
 	flex: 1;
 	font-size: 0.9rem;
 	font-weight: 600;
-	color: var(--main-ink);
+	color: var(--usb-ink);
 }
 
 /* Logout button/link in footer */
@@ -152,9 +161,9 @@
 	font-size: 0.85rem;
 	padding: 6px 12px;
 	border-radius: 8px;
-	border: 1px solid var(--main-border);
+	border: 1px solid var(--usb-border);
 	background: transparent;
-	color: var(--main-muted);
+	color: var(--usb-muted);
 	text-decoration: none;
 	cursor: pointer;
 	transition: all 150ms ease;
@@ -164,8 +173,8 @@
 /* Logout button hover state */
 .sidebar-logout:hover {
 	background: rgba(224, 122, 95, 0.08);
-	border-color: var(--main-accent-2);
-	color: var(--main-accent-2);
+	border-color: var(--usb-accent);
+	color: var(--usb-accent);
 	transform: translateY(-1px);
 }
 
@@ -174,7 +183,7 @@
 	flex: 1;
 	padding: 20px;
 	overflow-y: auto;
-	background: var(--main-bg);
+	background: var(--usb-ink);
 }
 
 /* Scrollbar styling for menu container - width */
@@ -189,13 +198,13 @@
 
 /* Scrollbar thumb - the draggable part */
 .sidebar-menu-container::-webkit-scrollbar-thumb {
-	background: var(--main-border);
+	background: var(--usb-border);
 	border-radius: 3px;
 }
 
 /* Scrollbar thumb hover state - darker on hover */
 .ps-sidebar-container::-webkit-scrollbar-thumb:hover {
-	background: var(--main-bg);
+	background: var(--usb-bg);
 }
 
 /* Mobile/tablet responsive adjustments - stacks sidebar on top of content */
@@ -207,6 +216,6 @@
 	.ps-sidebar-root {
 		width: 100% !important;
 		border-right: none !important;
-		border-bottom: 1px solid var(--main-border) !important;
+		border-bottom: 1px solid var(--usb-border) !important;
 	}
 }

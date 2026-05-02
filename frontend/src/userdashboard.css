@@ -1,13 +1,14 @@
 .page-container {
   padding: 30px;
-  background-color: var(--main-bg);
+  /* use card background for the page so the outer area doesn't show a dark border */
+  background-color: var(--main-card);
   min-height: 100vh;
 }
 
 .page-title {
   font-size: 28px;
   margin-bottom: 25px;
-  color: var(--main-ink);
+  color: var(--admin-header-blue);
 }
 
 .card-grid {
@@ -19,8 +20,8 @@
 .card {
   background-color: var(--main-card);
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: var(--main-shadow);
+  border-radius: 18px;
+  box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
   border: 1px solid var(--main-border);
   color: var(--main-ink);
   transition: transform 0.2s ease;
@@ -260,6 +261,74 @@
   flex-direction: column;
   gap: 5px;
   margin-bottom: 14px;
+}
+
+/* Join Queue two-column layout and table */
+.join-layout{
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 24px;
+  align-items: start;
+}
+
+.join-left .join-table-shell{
+  background: var(--main-card);
+  border: 1px solid var(--main-border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.join-table-header,
+.join-row{
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.join-table-header{
+  padding: 12px 14px;
+  background: var(--main-accent);
+  border-bottom: 1px solid var(--main-border);
+  font-weight: 700;
+  color: var(--main-bg);
+}
+
+/* Right-align the Estimated Wait header cell */
+.join-table-header .join-col:nth-child(2){
+  text-align: right;
+}
+
+.join-table-body{
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.join-row{
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--main-border);
+}
+
+.join-service-name{
+  font-weight: 700;
+  color: var(--main-ink);
+}
+
+.join-service-desc{
+  font-size: 0.9rem;
+  color: var(--main-muted);
+}
+
+.join-col.join-value{
+  text-align: right;
+  font-weight: 700;
+}
+
+.join-right .card{
+  position: sticky;
+  top: 92px;
 }
 
 .form-group-dashboard label {

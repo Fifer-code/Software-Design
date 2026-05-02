@@ -98,8 +98,9 @@ useEffect(() => {
     navigate("/user/status");
   } catch (err) {
     console.error(err);
-    console.log(err.response?.data);
-    addNotification("Failed to join queue", "error");
+    const errorMsg = err.response?.data?.message || err.message || "Failed to join queue";
+    console.log("Join error details:", err.response?.data);
+    addNotification(errorMsg, "error");
   }
 };
 
@@ -107,19 +108,34 @@ useEffect(() => {
   return (
     <div className="page-container">
       <h2 className="page-title">Join a Queue</h2>
+      <div className="join-layout">
+        <div className="join-left">
+          <div className="join-table-shell">
+            <div className="join-table-header" role="row">
+              <div className="join-col join-col-service">Service</div>
+              <div className="join-col">Estimated Wait</div>
+            </div>
 
-      <div className="card-grid">
-        {services.map((service) => (
-          <div className="card" key={service.id}>
-            <h3>{service.name}</h3>
-            <p>Estimated Wait: {service.waitTime ?? "N/A"} minutes</p>
+            <div className="join-table-body">
+              {services.map((service) => (
+                <div key={service.id} className="join-row" role="row">
+                  <div className="join-col join-col-service">
+                    <div className="join-service-name">{service.name}</div>
+                    {service.description && (
+                      <div className="join-service-desc">{service.description}</div>
+                    )}
+                  </div>
+                  <div className="join-col join-value">{service.waitTime ?? "N/A"} min</div>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="card" style={{ marginTop: 24 }}>
-        <h3>Queue Registration</h3>
-        <form onSubmit={handleJoin} noValidate>
+        <div className="join-right">
+          <div className="card" style={{ marginTop: 0 }}>
+            <h3>Queue Registration</h3>
+            <form onSubmit={handleJoin} noValidate>
           <div className="form-group-dashboard">
             <label htmlFor="fullName">Full Name *</label>
             <input
@@ -182,10 +198,12 @@ useEffect(() => {
             )}
           </div>
 
-          <button type="submit" className="primary-btn">
-            Join Queue
-          </button>
-        </form>
+              <button type="submit" className="primary-btn">
+                Join Queue
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

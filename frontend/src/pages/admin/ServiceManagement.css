@@ -1,33 +1,41 @@
-.form-group textarea{
-    width: 90%;
-	padding: 12px 14px;
-	border-radius: 12px;
-	border: 1px solid var(--main-border);
-	background: var(--main-card);
-	color: var(--main-ink);
-	font-size: 1rem;
-	transition: border-color 150ms ease, box-shadow 150ms ease;
+.admin-shell {
+    --main-bg: #ffffff;
+    --main-card: #ffffff;
+    --main-ink: #111111;
+    --main-muted: #4b5563;
+    --main-border: #d6dde6;
+    --main-accent: #1f4c8f;
+    --main-accent-2: #163a6d;
+    color: var(--main-ink);
+    background: var(--main-bg);
 }
 
-.admin-subcard{
-    background: var(--main-card);
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3 {
+    color: var(--main-accent-2);
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
     border: 1px solid var(--main-border);
-    border-radius: 18px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    flex: none;
-    min-height: 50px;
-    min-width: 200px;
-    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
-    padding: 8px 10px;
-    margin: 10px;
+    background: var(--main-card);
+    color: var(--main-ink);
+    font-size: 1rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+    box-sizing: border-box;
 }
 
 .admin-edit-form {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     gap: 12px;
+    padding: 20px;
+    background: rgba(31, 122, 122, 0.03);
+    border-radius: 12px;
+    margin-top: 16px;
 }
 
 .edit-left, .edit-right {
@@ -36,15 +44,43 @@
 }
 
 .edit-middle textarea {
-    width: 100%; 
-    flex-grow: 1; 
-    box-sizing: border-box; 
-    resize: none; 
+    width: 100%;
+    flex-grow: 1;
+    box-sizing: border-box;
+    resize: vertical;
 }
 
 .edit-left input, .edit-right select {
     width: 100%;
     box-sizing: border-box;
+}
+
+.form-group {
+    margin-bottom: 8px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--main-accent-2);
+}
+
+.form-group input,
+.form-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--main-border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--main-ink);
+    background: var(--main-card);
+}
+
+.edit-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
 }
 
 .save-btn {
@@ -53,17 +89,13 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    margin-top: auto;
+    padding: 8px 14px;
+    font-weight: 600;
+    flex: 1;
 }
 
-.subcard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.subcard-header h3 {
-    margin: 0;
+.save-btn:hover {
+    background-color: var(--main-accent-2);
 }
 
 .delete-btn {
@@ -72,13 +104,255 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    padding: 0.3em 0.8em;
-    font-size: 0.85rem;
+    padding: 8px 14px;
+    font-weight: 600;
+    flex: 1;
 }
 
-.edit-middle .form-group {
-    height: 100%;
+.delete-btn:hover {
+    background-color: #a93226;
+}
+
+.cancel-btn {
+    background-color: var(--main-muted);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 8px 14px;
+    font-weight: 600;
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background-color: #3d4451;
+}
+
+.service-edit-expanded {
+    padding: 16px 18px;
+    background: rgba(31, 122, 122, 0.05);
+    border-top: 1px solid var(--main-border);
+    border-bottom: 1px solid var(--main-border);
+}
+
+.service-table-shell {
+    background: var(--main-card);
+    border: 1px solid var(--main-border);
+    border-radius: 18px;
+    box-shadow: 10px 10px 10px rgba(29, 36, 41, 0.18);
+    overflow: hidden;
+    animation: auth-rise 500ms ease-out;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    margin: 0; /* ensure it sits flush inside parent card */
+}
+
+.service-table-header,
+.service-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.2fr;
+    gap: 14px;
+    align-items: center;
+}
+
+.service-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 14px 18px;
+    background: var(--main-accent);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 1px solid var(--main-border);
+}
+
+.service-table-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 18px; /* avoid last row flush against bottom */
+    box-sizing: border-box;
+    height: 100%;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(31, 122, 122, 0.08), transparent 35%),
+        var(--main-card);
+}
+
+.service-row {
+    padding: 14px 18px;
+    width: 100%;
+    box-sizing: border-box;
+    /* use an inset bottom shadow for a crisper divider over backgrounds */
+    border-bottom: none;
+    box-shadow: inset 0 -1px 0 rgba(15,23,42,0.06);
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.service-row:last-child {
+    box-shadow: none;
+}
+
+.service-row:hover {
+    background: rgba(31, 122, 122, 0.06);
+}
+
+.service-col {
+    min-width: 0;
+    color: var(--main-ink);
+    font-size: 0.95rem;
+}
+
+.service-table-header .service-col {
+    color: #ffffff;
+}
+
+.service-col-name {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.service-name {
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.service-desc {
+    font-size: 0.82rem;
+    color: var(--main-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.service-chip {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+.service-priority-high {
+    background: rgba(192, 57, 43, 0.14);
+    color: #b33628;
+    border-color: rgba(192, 57, 43, 0.3);
+}
+
+.service-priority-medium {
+    background: rgba(230, 126, 34, 0.14);
+    color: #c2651b;
+    border-color: rgba(230, 126, 34, 0.3);
+}
+
+.service-priority-low {
+    background: rgba(34, 162, 142, 0.14);
+    color: #1f7a7a;
+    border-color: rgba(31, 122, 122, 0.3);
+}
+
+.service-status-open {
+    background: rgba(39, 174, 96, 0.14);
+    color: #22864a;
+    border-color: rgba(39, 174, 96, 0.3);
+}
+
+.service-status-paused {
+    background: rgba(241, 196, 15, 0.16);
+    color: #9c7f00;
+    border-color: rgba(241, 196, 15, 0.35);
+}
+
+.service-status-closed {
+    background: rgba(231, 76, 60, 0.14);
+    color: #ba2d20;
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.service-col-action {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.edit-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: var(--main-accent);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.edit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(31, 122, 122, 0.25);
+}
+
+.service-loading {
+    padding: 40px 18px;
+    text-align: center;
+    color: var(--main-muted);
+}
+
+.service-table-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+.service-table-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.service-table-body::-webkit-scrollbar-thumb {
+    background: rgba(31, 122, 122, 0.25);
+    border-radius: 999px;
+}
+
+.service-table-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(31, 122, 122, 0.38);
+}
+
+.view-toggle-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* Create form spacing so fields are not flush to card edges */
+.admin-create-form {
+    padding: 20px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toggle-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--main-border);
+    border-radius: 8px;
+    background: var(--main-card);
+    color: var(--main-accent-2);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 160ms ease;
+}
+
+.toggle-btn:hover {
+    border-color: var(--main-accent);
+    color: var(--main-accent);
+}
+
+.toggle-btn.active {
+    background: var(--main-accent);
+    color: #ffffff;
+    border-color: var(--main-accent);
 }
 
