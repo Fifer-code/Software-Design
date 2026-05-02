@@ -1,15 +1,15 @@
 import "./QueueManagement.css";
 import AdminSidebar from "../../components/AdminSidebar";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { QueueContext } from "../../context/QueueContext";
 import { getAuthHeaders } from "../../utils/auth";
 import personIcon from '../../assets/person.svg';
 import { useNotifications } from '../../context/NotificationContext';
 
-// modular reusable user row with buttons and name
 const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
     <div className="queue-user">
-        <p>{user.name}</p>
+        <div className="queue-user-position">{user.position}</div>
+        <p className="queue-user-name">{user.name}</p>
         <div className="queue-user-actions">
             <button 
                 className="queue-move-buttons" 
@@ -32,44 +32,39 @@ const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
     </div>
 );
 
-// modular reusable for entire service card, uses backend configs
-const QueueCard = ({ serviceId, title, description, status, usersList, estimatedWait, priority, onServe, onMove, onRemove }) => {
-    return (
-        <div className="admin-subcard">
-            <h3>{title}</h3>
-            {description && <p>{description}</p>}
-            <div className="queue-description">
-                <p style={{flex: 1}}>People in Queue: {usersList?.length || 0}</p>
-                <p style={{flex: 1}}>Estimated Wait: {estimatedWait} minutes</p>
-                <p style={{flex: 1}}>Priority: {priority}</p>
-                <p style={{flex: 1}}>Status: {status}</p>
-                <button type="submit" className="serve-button" onClick={() => onServe(serviceId)}>
-                    Serve Next User
-                </button>
-            </div>
-            
-            <div className="queue-list-container">
-                {usersList?.map((user) => (
-                    <QueueUserItem 
-                        key={user.ticketId} 
-                        user={user} 
+const QueueManagePanel = ({ serviceId, usersList, onMove, onRemove }) => (
+    <div className="queue-manage-panel">
+        <div className="queue-manage-panel-header">
+            <span>Queue Position</span>
+            <span>Name</span>
+            <span className="queue-manage-panel-actions-label">Actions</span>
+        </div>
+        <div className="queue-list-container">
+            {usersList.length > 0 ? (
+                usersList.map((user) => (
+                    <QueueUserItem
+                        key={user.ticketId}
+                        user={user}
                         serviceId={serviceId}
                         onMove={onMove}
                         onRemove={onRemove}
                     />
-                ))}
-            </div>
+                ))
+            ) : (
+                <div className="queue-empty-state">No one is currently waiting in this queue.</div>
+            )}
         </div>
-    );
-};
+    </div>
+);
 
 function QueueManagement() {
     const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
     const { addNotification } = useNotifications();
+    const [expandedQueueId, setExpandedQueueId] = useState(null);
 
     useEffect(() => {
         fetchQueueData();
-    }, []);
+    }, [fetchQueueData]);
 
     const handleServeNext = async (serviceId) => {
         try {
@@ -168,41 +163,62 @@ function QueueManagement() {
 
                     <div className="queue-table-body">
                         {services.map((service) => {
-                            const people = queueLists?.[service.id]?.length || 0;
-                            const wait = waitTimes?.[service.id] || 0;
+                            const usersList = [...(queueLists?.[service.id] || [])].sort(
+                                (left, right) => (left.position || 0) - (right.position || 0)
+                            );
+                            const people = usersList.length;
+                            const wait = waitTimes?.[service.id]?.totalEstimatedWaitMinutes || 0;
                             const priority = service.priority || "Low";
                             const status = queueStatuses?.[service.id] || "open";
+                            const isExpanded = expandedQueueId === service.id;
 
                             return (
-                                <div key={service.id} className="queue-row" role="row">
-                                    <div className="queue-col queue-col-service">
-                                        <div className="queue-service-name">{service.name || "Unnamed Queue"}</div>
-                                        {service.description && (
-                                            <div className="queue-service-desc">{service.description}</div>
-                                        )}
+                                <div key={service.id} className="queue-service-block" role="rowgroup">
+                                    <div className="queue-row" role="row">
+                                        <div className="queue-col queue-col-service">
+                                            <div className="queue-service-name">{service.name || "Unnamed Queue"}</div>
+                                            {service.description && (
+                                                <div className="queue-service-desc">{service.description}</div>
+                                            )}
+                                        </div>
+                                        <div className="queue-col queue-value"><img src={personIcon} alt="person" className="qm-person-icon"/> {people}</div>
+                                        <div className="queue-col queue-value">{wait} min</div>
+                                        <div className="queue-col queue-value">
+                                            <span className={`queue-chip queue-chip-priority-${priority.toLowerCase()}`}>
+                                                {priority}
+                                            </span>
+                                        </div>
+                                        <div className="queue-col queue-value">
+                                            <span className={`queue-chip queue-chip-status-${status.toLowerCase()}`}>
+                                                {status}
+                                            </span>
+                                        </div>
+                                        <div className="queue-col queue-col-action queue-action-group">
+                                            <button
+                                                type="button"
+                                                className="serve-button"
+                                                onClick={() => handleServeNext(service.id)}
+                                                disabled={people === 0}
+                                            >
+                                                Serve Next User
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="manage-button"
+                                                onClick={() => setExpandedQueueId(isExpanded ? null : service.id)}
+                                            >
+                                                {isExpanded ? "Hide" : "Manage"}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="queue-col queue-value"><img src={personIcon} alt="person" className="qm-person-icon"/> {people}</div>
-                                    <div className="queue-col queue-value">{wait} min</div>
-                                    <div className="queue-col queue-value">
-                                        <span className={`queue-chip queue-chip-priority-${priority.toLowerCase()}`}>
-                                            {priority}
-                                        </span>
-                                    </div>
-                                    <div className="queue-col queue-value">
-                                        <span className={`queue-chip queue-chip-status-${status.toLowerCase()}`}>
-                                            {status}
-                                        </span>
-                                    </div>
-                                    <div className="queue-col queue-col-action">
-                                        <button
-                                            type="button"
-                                            className="serve-button"
-                                            onClick={() => handleServeNext(service.id)}
-                                            disabled={people === 0}
-                                        >
-                                            Serve Next User
-                                        </button>
-                                    </div>
+                                    {isExpanded && (
+                                        <QueueManagePanel
+                                            serviceId={service.id}
+                                            usersList={usersList}
+                                            onMove={handleMove}
+                                            onRemove={handleRemove}
+                                        />
+                                    )}
                                 </div>
                             );
                         })}

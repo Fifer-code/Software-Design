@@ -4,6 +4,18 @@ const QueueEntry = require('../models/queueEntry');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 const { recordJoin, recordServed, recordRemoved } = require('./historyController');
 
+const resequenceWaitingQueue = async (serviceId) => {
+    const waitingEntries = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1, joinTime: 1, ticketId: 1 });
+
+    await Promise.all(
+        waitingEntries.map((entry, index) =>
+            QueueEntry.findByIdAndUpdate(entry._id, { position: index + 1 })
+        )
+    );
+
+    return waitingEntries;
+};
+
 // time for entire queue mainly for admin purposes
 const getWaitTime = async (req, res) => {
   try {
@@ -83,7 +95,7 @@ const getQueueList = async (req, res) => {
         const queues = {};
         for (const entry of entries) {
             if (!queues[entry.queueId]) queues[entry.queueId] = [];
-            queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name });
+            queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name, position: entry.position });
         }
 
         // include queue status for each service so the frontend can display it
@@ -130,12 +142,14 @@ const serveNextUser = async (req, res) => {
         if (remaining[0]) triggerNearFrontNotification(remaining[0].ticketId, remaining[0].name, serviceId, 1);
         if (remaining[1]) triggerNearFrontNotification(remaining[1].ticketId, remaining[1].name, serviceId, 2);
 
+        const normalizedQueue = await resequenceWaitingQueue(serviceId);
+
         // return success and info about served user
         res.json({
             success: true,
             message: `Now serving: ${servedUser.name}`,
             servedUser: { ticketId: servedUser.ticketId, name: servedUser.name },
-            updatedQueue: remaining.map(e => ({ ticketId: e.ticketId, name: e.name }))
+            updatedQueue: normalizedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, position: e.position }))
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -208,8 +222,14 @@ const removeUser = async (req, res) => {
         // record removal in history if user was found
         if (entry) recordRemoved(ticketId, entry.name, serviceId);
 
+        const updatedQueue = await resequenceWaitingQueue(serviceId);
+
         // return success and info about removed user
-        res.json({ success: true, message: "User removed" });
+        res.json({
+            success: true,
+            message: "User removed",
+            updatedQueue: updatedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, position: e.position }))
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
