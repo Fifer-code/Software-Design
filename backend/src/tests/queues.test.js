@@ -7,6 +7,7 @@ const queueRoutes = require("../routes/queueRoutes");
 jest.mock("../models/service");
 jest.mock("../models/queue");
 jest.mock("../models/queueEntry");
+jest.mock("../models/history");
 
 jest.mock("../controllers/notificationController", () => ({
   triggerJoinNotification: jest.fn(),
@@ -21,6 +22,7 @@ jest.mock("../controllers/historyController", () => ({
 const Service = require("../models/service");
 const Queue = require("../models/queue");
 const QueueEntry = require("../models/queueEntry");
+const History = require("../models/history");
 
 const app = express();
 app.use(express.json());
@@ -36,9 +38,13 @@ beforeEach(() => {
   jest.clearAllMocks();
   // most tests need a valid service and open queue, set as default
   Service.findOne.mockResolvedValue({ serviceId: "dmv", name: "DMV Queue 1", duration: 15 });
+  // joinQueue calls findOneAndUpdate to increment ticketCounter
+  Service.findOneAndUpdate.mockResolvedValue({ serviceId: "dmv", ticketCounter: 1 });
   Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
   // getQueueList calls Queue.find() for statuses — default to empty list
   Queue.find.mockResolvedValue([]);
+  // getWaitTime fetches history — default to empty (falls back to service duration)
+  History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 });
 
 describe("Queue API", () => {
@@ -250,11 +256,11 @@ describe("Queue API", () => {
 
     const res = await request(app).get("/api/queues/wait-time").set("Authorization", `Bearer ${adminToken}`);
 
-    // controller returns flattened: { success: true, dmvWaitTime: X, bankWaitTime: Y }
+    // controller returns { success: true, waitTimes: { dmv: {...}, bank: {...} } }
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.dmvWaitTime).toBe(45);
-    expect(res.body.bankWaitTime).toBe(30);
+    expect(res.body.waitTimes.dmv.totalEstimatedWaitMinutes).toBe(45);
+    expect(res.body.waitTimes.bank.totalEstimatedWaitMinutes).toBe(30);
   });
 
   test("Returns zero wait time when queue is empty", async () => {
@@ -266,7 +272,7 @@ describe("Queue API", () => {
     const res = await request(app).get("/api/queues/wait-time").set("Authorization", `Bearer ${adminToken}`);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.dmvWaitTime).toBe(0);
+    expect(res.body.waitTimes.dmv.totalEstimatedWaitMinutes).toBe(0);
   });
 
   // --- TESTS FOR QUEUE STATUS ---
