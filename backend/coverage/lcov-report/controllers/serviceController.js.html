@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.48% </span>
+                <span class="strong">86% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>32/37</span>
+                <span class='fraction'>43/50</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.66% </span>
+                <span class="strong">84.21% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>13/15</span>
+                <span class='fraction'>16/19</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.62% </span>
+                <span class="strong">90.9% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>29/32</span>
+                <span class='fraction'>40/44</span>
             </div>
         
             
@@ -133,7 +133,26 @@
 <a name='L68'></a><a href='#L68'>68</a>
 <a name='L69'></a><a href='#L69'>69</a>
 <a name='L70'></a><a href='#L70'>70</a>
-<a name='L71'></a><a href='#L71'>71</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -141,6 +160,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -186,6 +206,7 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -197,6 +218,21 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -205,6 +241,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">const Service = require('../models/service');
 const Queue = require('../models/queue');
+const QueueEntry = require('../models/queueEntry');
 &nbsp;
 // gets all services from the database
 const getService = async (req, res) =&gt; {
@@ -215,7 +252,8 @@ const getService = async (req, res) =&gt; {
             name: s.name,
             description: s.description,
             duration: s.duration,
-            priority: s.priority
+            priority: s.priority,
+            category: s.category
         }));
         res.json({ success: true, services: servicesArray });
     } catch (error) {
@@ -226,14 +264,14 @@ const getService = async (req, res) =&gt; {
 // creates a new service and saves it to the database
 const createService = async (req, res) =&gt; {
     try {
-        const { id, name, description, duration, priority } = req.body;
+        const { id, name, description, duration, priority, category } = req.body;
 &nbsp;
         // checks if there is an id, name, or duration missing
         if (!id || !name || !duration) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 &nbsp;
-        const service = await Service.create({ serviceId: id, name, description, duration, priority });
+        const service = await Service.create({ serviceId: id, name, description, duration, priority, category, ticketCounter: 0 });
 &nbsp;
         // create an open queue for this service (assignment requirement: Queue tracks status per service)
         await Queue.create({ serviceId: id, status: 'open' });
@@ -248,7 +286,7 @@ const createService = async (req, res) =&gt; {
 const updateService = async (req, res) =&gt; {
     try {
         const { id } = req.params;
-        const { name, description, duration, priority } = req.body;
+        const { name, description, duration, priority, category } = req.body;
 &nbsp;
         // build update object with only the fields that were provided
         const updates = {};
@@ -256,6 +294,7 @@ const updateService = async (req, res) =&gt; {
         <span class="missing-if-branch" title="if path not taken" >I</span>if (description) <span class="cstat-no" title="statement not covered" >updates.description = description;</span>
         if (duration) updates.duration = duration;
         <span class="missing-if-branch" title="if path not taken" >I</span>if (priority) <span class="cstat-no" title="statement not covered" >updates.priority = priority;</span>
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (category) <span class="cstat-no" title="statement not covered" >updates.category = category;</span>
 &nbsp;
         const service = await Service.findOneAndUpdate(
             { serviceId: id },
@@ -273,14 +312,29 @@ const updateService = async (req, res) =&gt; {
     }
 };
 &nbsp;
-module.exports = { getService, createService, updateService };</pre></td></tr></table></pre>
+const deleteService = async (req, res) =&gt; {
+    try {
+        const { id } = req.params;
+        const service = await Service.findOneAndDelete({ serviceId: id });
+        if (!service) {
+            return res.status(404).json({ success: false, message: "Service not found" });
+        }
+        await Queue.deleteMany({ serviceId: id });
+        await QueueEntry.deleteMany({ queueId: id });
+        res.json({ success: true, message: "Service deleted" });
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >        res.status(500).json({ success: false, message: error.message });</span>
+    }
+};
+&nbsp;
+module.exports = { getService, createService, updateService, deleteService };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-10T18:49:19.585Z
+                at 2026-05-02T00:31:55.197Z
             </div>
         <script src="../prettify.js"></script>
         <script>
