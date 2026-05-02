@@ -232,9 +232,15 @@ const joinQueue = async (req, res) => {
         }
 
         // block join if queue is paused or closed
-        const queue = await Queue.findOne({ serviceId });
-        if (!queue || queue.status !== 'open') {
-            return res.status(400).json({ success: false, message: `Queue is currently ${queue ? queue.status : 'unavailable'}` });
+        let queue = await Queue.findOne({ serviceId });
+        
+        // if queue doesn't exist, create it (handles data inconsistency)
+        if (!queue) {
+            queue = await Queue.create({ serviceId, status: 'open' });
+        }
+        
+        if (queue.status !== 'open') {
+            return res.status(400).json({ success: false, message: `Queue is currently ${queue.status}` });
         }
 
     const waitingCount = await QueueEntry.countDocuments({
@@ -242,11 +248,19 @@ const joinQueue = async (req, res) => {
       status: 'waiting'
     });
 
-    // generate ticket ID — use total count (all statuses) to avoid duplicates after serve/remove
-    const totalCount = await QueueEntry.countDocuments({ queueId: serviceId });
+    // use atomic counter on Service to avoid duplicate ticket IDs after deletions
+    const updatedService = await Service.findOneAndUpdate(
+      { serviceId },
+      { $inc: { ticketCounter: 1 } },
+      { new: true }
+    );
+
+    if (!updatedService) {
+      return res.status(404).json({ success: false, message: "Service not found" });
+    }
+
     const prefix = serviceId.charAt(0).toUpperCase();
-    const ticketNumber = totalCount + 1;
-    const ticketId = `${prefix}${ticketNumber.toString().padStart(3, '0')}`;
+    const ticketId = `${prefix}${updatedService.ticketCounter.toString().padStart(3, '0')}`;
 
     const newEntry = await QueueEntry.create({
       queueId: serviceId,

@@ -98,8 +98,9 @@ useEffect(() => {
     navigate("/user/status");
   } catch (err) {
     console.error(err);
-    console.log(err.response?.data);
-    addNotification("Failed to join queue", "error");
+    const errorMsg = err.response?.data?.message || err.message || "Failed to join queue";
+    console.log("Join error details:", err.response?.data);
+    addNotification(errorMsg, "error");
   }
 };
 
