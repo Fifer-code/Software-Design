@@ -8,7 +8,6 @@ function History() {
   const fetchHistory = async () => {
     try {
 
-      // Inside History.jsx
     const response = await fetch('http://localhost:8080/api/history', { 
     headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
