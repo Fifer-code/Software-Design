@@ -3,18 +3,19 @@ import "/src/userdashboard.css";
 
 function History() {
   const [history, setHistory] = useState([]);
+  const [serviceNames, setServiceNames] = useState({});
 
   useEffect(() => {
   const fetchHistory = async () => {
     try {
 
-    const response = await fetch('http://localhost:8080/api/history', { 
+    const response = await fetch('http://localhost:8080/api/history?limit=20', {
     headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
 });
       const data = await response.json();
-      
+
       if (data.success) {
         setHistory(data.history);
       }
@@ -23,7 +24,28 @@ function History() {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/services', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      const data = await response.json();
+      if (data.services) {
+        const nameMap = {};
+        data.services.forEach(service => {
+          nameMap[service.id] = service.name;
+        });
+        setServiceNames(nameMap);
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
   fetchHistory();
+  fetchServices();
 }, []);
 
    return (
@@ -35,7 +57,7 @@ function History() {
 
           <div className="card" key={item._id || index}>
             <h3>
-              {new Date(item.timestamp).toLocaleString()} - {item.serviceId}
+              {new Date(item.timestamp).toLocaleString()} - {serviceNames[item.serviceId] || item.serviceId}
             </h3>
             
             <p><strong>Name:</strong> {item.name}</p>

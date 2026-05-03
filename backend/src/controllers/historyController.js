@@ -39,9 +39,10 @@ const recordRemoved = async (ticketId, name, serviceId) => {
     return entry;
 };
 
-// GET /api/history — return full history log
+// GET /api/history — return history log, optional ?limit=N
 const getAllHistory = async (req, res) => {
-    const history = await History.find().sort({ timestamp: -1 });
+    const limit = parseInt(req.query.limit) || 0;
+    const history = await History.find().sort({ timestamp: -1 }).limit(limit);
     res.json({ success: true, history });
 };
 
