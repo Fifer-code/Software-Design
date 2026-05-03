@@ -48,7 +48,7 @@ Was built with authentication, real-time interactions and functional interconnec
 
 1. Clone the repo
 ```bash
-git clone <repo-url>
+git clone https://github.com/Fifer-code/Software-Design.git
 cd Software-Design
 ```
 
