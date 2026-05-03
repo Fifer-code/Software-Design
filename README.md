@@ -96,28 +96,24 @@ services, queue entries, history, and feedback are all pre-loaded so the app is 
 
 **Login & Registration**
 <p>
-  <img src="screenshots/Log-in.png" width="45%">
-  <img src="screenshots/Register.png" width="45%">
+  <img src="screenshots/Log-in.png" width="30%">
+  <img src="screenshots/Register.png" width="25%">
 </p>
 
 **User Side**
 <p>
-  <img src="screenshots/User-Dash.png" width="30%">
-  <img src="screenshots/User-Join.png" width="30%">
-  <img src="screenshots/User-Status.png" width="30%">
-</p>
-<p>
-  <img src="screenshots/User-History.png" width="30%">
-  <img src="screenshots/User-Feedback.png" width="30%">
+  <img src="screenshots/User-Dash.png" width="40%">
+  <img src="screenshots/User-Join.png" width="40%">
+  <img src="screenshots/User-Status.png" width="40%">
+  <img src="screenshots/User-History.png" width="40%">
+  <img src="screenshots/User-Feedback.png" width="40%">
 </p>
 
 **Admin Side**
 <p>
-  <img src="screenshots/Admin-Dash.png" width="30%">
-  <img src="screenshots/Admin-Queue.png" width="30%">
-  <img src="screenshots/Admin-service.png" width="30%">
-</p>
-<p>
-  <img src="screenshots/Admin-Report.png" width="30%">
-  <img src="screenshots/Admin-Feedback.png" width="30%">
+  <img src="screenshots/Admin-Dash.png" width="40%">
+  <img src="screenshots/Admin-Queue.png" width="40%">
+  <img src="screenshots/Admin-service.png" width="40%">
+  <img src="screenshots/Admin-Report.png" width="40%">
+  <img src="screenshots/Admin-Feedback.png" width="40%">
 </p>
