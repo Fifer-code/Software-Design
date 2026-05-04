@@ -46,7 +46,7 @@ describe("Services API", () => {
     expect(res.body.success).toBe(true);
     expect(res.body.service).toBeDefined();
     expect(Service.create).toHaveBeenCalledWith({
-        serviceId: "dmv", name: "DMV", description: "License renewal", duration: 30, priority: "High", category: undefined, ticketCounter: 0
+        serviceId: "dmv", name: "DMV", description: "License renewal", duration: 30, priority: "High", category: undefined, subcategories: [], ticketCounter: 0
     });
   });
 

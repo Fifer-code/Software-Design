@@ -4,16 +4,20 @@ const QueueEntry = require('../models/queueEntry');
 const { triggerJoinNotification, triggerNearFrontNotification } = require('./notificationController');
 const { recordJoin, recordServed, recordRemoved } = require('./historyController');
 
-const resequenceWaitingQueue = async (serviceId) => {
-    const waitingEntries = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1, joinTime: 1, ticketId: 1 });
+const PRIORITY_ORDER = { High: 1, Medium: 2, Low: 3 };
 
-    await Promise.all(
-        waitingEntries.map((entry, index) =>
-            QueueEntry.findByIdAndUpdate(entry._id, { position: index + 1 })
-        )
-    );
-
-    return waitingEntries;
+// re-sorts waiting entries by priority (High first) then joinTime (earlier first) and reassigns positions
+const reorderQueue = async (serviceId) => {
+    const entries = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ joinTime: 1 });
+    entries.sort((a, b) => {
+        const pa = PRIORITY_ORDER[a.priority] || 3;
+        const pb = PRIORITY_ORDER[b.priority] || 3;
+        if (pa !== pb) return pa - pb;
+        return new Date(a.joinTime) - new Date(b.joinTime);
+    });
+    for (let i = 0; i < entries.length; i++) {
+        await QueueEntry.findByIdAndUpdate(entries[i]._id, { position: i + 1 });
+    }
 };
 
 // time for entire queue mainly for admin purposes
@@ -95,7 +99,7 @@ const getQueueList = async (req, res) => {
         const queues = {};
         for (const entry of entries) {
             if (!queues[entry.queueId]) queues[entry.queueId] = [];
-            queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name, position: entry.position });
+            queues[entry.queueId].push({ ticketId: entry.ticketId, name: entry.name, subCategory: entry.subCategory, priority: entry.priority });
         }
 
         // include queue status for each service so the frontend can display it
@@ -142,14 +146,12 @@ const serveNextUser = async (req, res) => {
         if (remaining[0]) triggerNearFrontNotification(remaining[0].ticketId, remaining[0].name, serviceId, 1);
         if (remaining[1]) triggerNearFrontNotification(remaining[1].ticketId, remaining[1].name, serviceId, 2);
 
-        const normalizedQueue = await resequenceWaitingQueue(serviceId);
-
         // return success and info about served user
         res.json({
             success: true,
             message: `Now serving: ${servedUser.name}`,
             servedUser: { ticketId: servedUser.ticketId, name: servedUser.name },
-            updatedQueue: normalizedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, position: e.position }))
+            updatedQueue: remaining.map(e => ({ ticketId: e.ticketId, name: e.name }))
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -222,14 +224,8 @@ const removeUser = async (req, res) => {
         // record removal in history if user was found
         if (entry) recordRemoved(ticketId, entry.name, serviceId);
 
-        const updatedQueue = await resequenceWaitingQueue(serviceId);
-
         // return success and info about removed user
-        res.json({
-            success: true,
-            message: "User removed",
-            updatedQueue: updatedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, position: e.position }))
-        });
+        res.json({ success: true, message: "User removed" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -239,7 +235,7 @@ const removeUser = async (req, res) => {
 const joinQueue = async (req, res) => {
     try {
         const { serviceId } = req.params;
-        const { name } = req.body;
+        const { name, subCategory } = req.body;
 
         if (!name || typeof name !== 'string' || !name.trim()) {
             return res.status(400).json({ success: false, message: "Invalid name" });
@@ -282,14 +278,26 @@ const joinQueue = async (req, res) => {
     const prefix = serviceId.charAt(0).toUpperCase();
     const ticketId = `${prefix}${updatedService.ticketCounter.toString().padStart(3, '0')}`;
 
+    // derive priority from the selected subcategory, default to Low
+    let entryPriority = 'Low';
+    if (subCategory && updatedService.subcategories?.length) {
+        const match = updatedService.subcategories.find(sc => sc.name === subCategory);
+        if (match) entryPriority = match.priority;
+    }
+
     const newEntry = await QueueEntry.create({
       queueId: serviceId,
       userId: name.trim(),
       ticketId,
       name: name.trim(),
+      subCategory: subCategory || '',
+      priority: entryPriority,
       position: waitingCount + 1,
       status: 'waiting'
     });
+
+    // reorder queue to place entry at correct priority position
+    await reorderQueue(serviceId);
 
     // notify the user that they have joined the queue
     triggerJoinNotification(ticketId, name.trim(), serviceId);
@@ -299,6 +307,8 @@ const joinQueue = async (req, res) => {
     res.json({
       ticketId: newEntry.ticketId,
       name: newEntry.name,
+      subCategory: newEntry.subCategory,
+      priority: newEntry.priority,
       serviceId,
       status: newEntry.status
     });
@@ -354,9 +364,80 @@ const clearAllQueues = async (req, res) => {
     }
 };
 
+// PATCH /api/queues/:serviceId/subcategory-priority — admin changes a subcategory's priority level
+// updates all waiting users in that subcategory and reorders the queue
+const updateSubcategoryPriority = async (req, res) => {
+    try {
+        const { serviceId } = req.params;
+        const { subCategoryName, newPriority } = req.body;
+
+        if (!subCategoryName || !newPriority) {
+            return res.status(400).json({ success: false, message: "subCategoryName and newPriority are required" });
+        }
+        if (!['Low', 'Medium', 'High'].includes(newPriority)) {
+            return res.status(400).json({ success: false, message: "newPriority must be Low, Medium, or High" });
+        }
+
+        const service = await Service.findOne({ serviceId });
+        if (!service) return res.status(404).json({ success: false, message: "Service not found" });
+
+        const sub = service.subcategories.find(sc => sc.name === subCategoryName);
+        if (!sub) return res.status(404).json({ success: false, message: "Subcategory not found" });
+
+        sub.priority = newPriority;
+        await service.save();
+
+        // update all waiting queue entries in this subcategory to the new priority
+        await QueueEntry.updateMany(
+            { queueId: serviceId, subCategory: subCategoryName, status: 'waiting' },
+            { priority: newPriority }
+        );
+
+        await reorderQueue(serviceId);
+
+        const updatedQueue = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1 });
+        res.json({
+            success: true,
+            message: `${subCategoryName} priority updated to ${newPriority}`,
+            updatedQueue: updatedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, subCategory: e.subCategory, priority: e.priority }))
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// PATCH /api/queues/:serviceId/:ticketId/priority — admin overrides a single user's priority
+const overrideUserPriority = async (req, res) => {
+    try {
+        const { serviceId, ticketId } = req.params;
+        const { priority } = req.body;
+
+        if (!['Low', 'Medium', 'High'].includes(priority)) {
+            return res.status(400).json({ success: false, message: "priority must be Low, Medium, or High" });
+        }
+
+        const entry = await QueueEntry.findOne({ queueId: serviceId, ticketId, status: 'waiting' });
+        if (!entry) return res.status(404).json({ success: false, message: "User not found in queue" });
+
+        entry.priority = priority;
+        await entry.save();
+
+        await reorderQueue(serviceId);
+
+        const updatedQueue = await QueueEntry.find({ queueId: serviceId, status: 'waiting' }).sort({ position: 1 });
+        res.json({
+            success: true,
+            message: `${entry.name}'s priority overridden to ${priority}`,
+            updatedQueue: updatedQueue.map(e => ({ ticketId: e.ticketId, name: e.name, subCategory: e.subCategory, priority: e.priority }))
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // used by tests to reset queue state between runs
 const resetQueues = async () => {
     await QueueEntry.deleteMany({});
 };
 
-module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues, updateQueueStatus, clearAllQueues };
+module.exports = { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, resetQueues, updateQueueStatus, clearAllQueues, updateSubcategoryPriority, overrideUserPriority };

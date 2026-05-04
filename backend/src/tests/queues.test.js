@@ -43,7 +43,9 @@ beforeEach(() => {
   Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
   // getQueueList calls Queue.find() for statuses — default to empty list
   Queue.find.mockResolvedValue([]);
+  // reorderQueue (called by joinQueue) calls QueueEntry.find().sort() — default to empty queue
   QueueEntry.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
+  QueueEntry.findByIdAndUpdate.mockResolvedValue({});
   // getWaitTime fetches history — default to empty (falls back to service duration)
   History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 });
@@ -90,7 +92,7 @@ describe("Queue API", () => {
     QueueEntry.create.mockResolvedValue({ ticketId: "D001", name: "TestUser", status: "waiting" });
     QueueEntry.find.mockReturnValue({
       sort: jest.fn().mockResolvedValue([
-        { queueId: "dmv", ticketId: "D001", name: "TestUser", position: 1 }
+        { queueId: "dmv", ticketId: "D001", name: "TestUser" }
       ])
     });
 
@@ -110,7 +112,6 @@ describe("Queue API", () => {
     expect(Array.isArray(queuesForService)).toBe(true);
     expect(queuesForService.length).toBeGreaterThan(0);
     expect(queuesForService[queuesForService.length - 1].name).toBe("TestUser");
-    expect(queuesForService[queuesForService.length - 1].position).toBe(1);
   });
 
   test("Leave queue", async () => {

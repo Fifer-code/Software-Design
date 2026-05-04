@@ -33,6 +33,58 @@ const ServiceDescriptions = {
 };
 
 // Service edit form (uses notifications internally)
+const SubcategoryEditor = ({ subcategories, onChange }) => {
+    const [newName, setNewName] = useState("");
+    const [newPriority, setNewPriority] = useState("Low");
+
+    const handleAdd = () => {
+        const trimmed = newName.trim();
+        if (!trimmed) return;
+        if (subcategories.find(sc => sc.name === trimmed)) return;
+        onChange([...subcategories, { name: trimmed, priority: newPriority }]);
+        setNewName("");
+        setNewPriority("Low");
+    };
+
+    const handleRemove = (name) => onChange(subcategories.filter(sc => sc.name !== name));
+
+    const handlePriorityChange = (name, priority) =>
+        onChange(subcategories.map(sc => sc.name === name ? { ...sc, priority } : sc));
+
+    return (
+        <div className="subcategory-editor">
+            <label>Subcategories:</label>
+            {subcategories.map(sc => (
+                <div key={sc.name} className="subcategory-row">
+                    <span className="subcategory-name">{sc.name}</span>
+                    <select value={sc.priority} onChange={(e) => handlePriorityChange(sc.name, e.target.value)}>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                    <button type="button" className="delete-btn" onClick={() => handleRemove(sc.name)}>✕</button>
+                </div>
+            ))}
+            <div className="subcategory-add-row">
+                <input
+                    type="text"
+                    placeholder="Subcategory name"
+                    value={newName}
+                    maxLength={100}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
+                />
+                <select value={newPriority} onChange={(e) => setNewPriority(e.target.value)}>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <button type="button" className="save-btn" onClick={handleAdd}>Add</button>
+            </div>
+        </div>
+    );
+};
+
 const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
     const { addNotification } = useNotifications();
     const [formData, setFormData] = useState({
@@ -43,6 +95,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
         category: initialData.category || "",
         status: status || "open"
     });
+    const [subcategories, setSubcategories] = useState(initialData.subcategories || []);
 
     const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,7 +117,8 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({
                     ...formData,
-                    duration: Number(formData.duration)
+                    duration: Number(formData.duration),
+                    subcategories
                 })
             });
             const data = await response.json();
@@ -178,6 +232,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                     </div>
                 </div>
             </form>
+            <SubcategoryEditor subcategories={subcategories} onChange={setSubcategories} />
         </div>
     );
 };
@@ -209,6 +264,7 @@ function ServiceManagement() {
         duration: '',
         priority: ''
     });
+    const [newServiceSubcategories, setNewServiceSubcategories] = useState([]);
 
     const handleNewServiceChange = (e) => {
     const { name, value } = e.target;
@@ -233,13 +289,15 @@ function ServiceManagement() {
                 body: JSON.stringify({
                     id: generatedId,
                     ...newService,
-                    duration: Number(newService.duration)
+                    duration: Number(newService.duration),
+                    subcategories: newServiceSubcategories
                 })
             });
 
             if (response.ok) {
                 addNotification("Service successfully created!", "success");
                 setNewService({ category: '', name: '', description: '', duration: '', priority: '' });
+                setNewServiceSubcategories([]);
                 fetchServices();
             } else {
                 const err = await response.json();
@@ -301,6 +359,7 @@ function ServiceManagement() {
                         <option value="Low">Low</option>
                     </select>
                 </div>
+                <SubcategoryEditor subcategories={newServiceSubcategories} onChange={setNewServiceSubcategories} />
                 <button type="submit">Create New Service</button>
             </form>
         </div>
