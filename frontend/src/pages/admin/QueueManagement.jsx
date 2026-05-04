@@ -1,39 +1,66 @@
 import "./QueueManagement.css";
 import AdminSidebar from "../../components/AdminSidebar";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { QueueContext } from "../../context/QueueContext";
 import { getAuthHeaders } from "../../utils/auth";
 import personIcon from '../../assets/person.svg';
 import { useNotifications } from '../../context/NotificationContext';
 
 // modular reusable user row with buttons and name
-const QueueUserItem = ({ user, serviceId, onMove, onRemove }) => (
-    <div className="queue-user">
-        <p>{user.name}</p>
-        <div className="queue-user-actions">
-            <button 
-                className="queue-move-buttons" 
-                onClick={() => onMove(serviceId, user.ticketId, 'up')}>
+const QueueUserItem = ({ user, serviceId, onMove, onRemove, onOverridePriority }) => {
+    const [overridePriority, setOverridePriority] = useState(user.priority || 'Low');
+
+    // keep dropdown in sync if priority changes externally (e.g. after fetchQueueData)
+    useEffect(() => {
+        setOverridePriority(user.priority || 'Low');
+    }, [user.priority]);
+
+    return (
+        <div className="queue-user">
+            <div className="queue-user-info">
+                <p>{user.name}</p>
+                {user.subCategory && <span className="queue-subcategory">{user.subCategory}</span>}
+                <span className={`queue-chip queue-chip-priority-${(user.priority || 'low').toLowerCase()}`}>
+                    {user.priority || 'Low'}
+                </span>
+            </div>
+            <div className="queue-user-actions">
+                <button
+                    className="queue-move-buttons"
+                    onClick={() => onMove(serviceId, user.ticketId, 'up')}>
                     Move up
-            </button>
-
-            <button 
-                className="queue-move-buttons" 
-                onClick={() => onMove(serviceId, user.ticketId, 'down')}>
+                </button>
+                <button
+                    className="queue-move-buttons"
+                    onClick={() => onMove(serviceId, user.ticketId, 'down')}>
                     Move Down
-            </button>
-
-            <button 
-                className="queue-move-buttons" 
-                onClick={() => onRemove(serviceId, user.ticketId)}>
+                </button>
+                <button
+                    className="queue-move-buttons"
+                    onClick={() => onRemove(serviceId, user.ticketId)}>
                     Remove
-            </button>
+                </button>
+                <select
+                    value={overridePriority}
+                    onChange={(e) => setOverridePriority(e.target.value)}
+                    className="queue-move-buttons"
+                >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <button
+                    className="queue-move-buttons"
+                    onClick={() => onOverridePriority(serviceId, user.ticketId, overridePriority)}>
+                    Set Priority
+                </button>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 // modular reusable for entire service card, uses backend configs
-const QueueCard = ({ serviceId, title, description, status, usersList, estimatedWait, priority, onServe, onMove, onRemove }) => {
+const QueueCard = ({ serviceId, title, description, status, usersList, estimatedWait, priority, onServe, onMove, onRemove, onOverridePriority }) => {
     return (
         <div className="admin-subcard">
             <h3>{title}</h3>
@@ -47,15 +74,16 @@ const QueueCard = ({ serviceId, title, description, status, usersList, estimated
                     Serve Next User
                 </button>
             </div>
-            
+
             <div className="queue-list-container">
                 {usersList?.map((user) => (
-                    <QueueUserItem 
-                        key={user.ticketId} 
-                        user={user} 
+                    <QueueUserItem
+                        key={user.ticketId}
+                        user={user}
                         serviceId={serviceId}
                         onMove={onMove}
                         onRemove={onRemove}
+                        onOverridePriority={onOverridePriority}
                     />
                 ))}
             </div>
@@ -118,6 +146,27 @@ function QueueManagement() {
         }
     };
 
+    // override a single user's priority
+    const handleOverridePriority = async (serviceId, ticketId, priority) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/queues/${serviceId}/${ticketId}/priority`, {
+                method: 'PATCH',
+                headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ priority })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                addNotification(data.message, "info");
+                fetchQueueData();
+            } else {
+                addNotification("Failed to override priority", "warning");
+            }
+        } catch (error) {
+            addNotification("Error overriding priority", "warning");
+            console.error("Error overriding priority:", error);
+        }
+    };
+
     // logic for removing users when pressing remove button
     const handleRemove = async (serviceId, ticketId) => {
         try {
@@ -140,6 +189,8 @@ function QueueManagement() {
         }
     };
 
+
+    const [expandedService, setExpandedService] = useState(null);
 
     if (!services || !queueLists || !waitTimes) {
         return (
@@ -168,41 +219,68 @@ function QueueManagement() {
 
                     <div className="queue-table-body">
                         {services.map((service) => {
-                            const people = queueLists?.[service.id]?.length || 0;
+                            const users = queueLists?.[service.id] || [];
+                            const people = users.length;
                             const wait = waitTimes?.[service.id] || 0;
                             const priority = service.priority || "Low";
                             const status = queueStatuses?.[service.id] || "open";
+                            const isExpanded = expandedService === service.id;
 
                             return (
-                                <div key={service.id} className="queue-row" role="row">
-                                    <div className="queue-col queue-col-service">
-                                        <div className="queue-service-name">{service.name || "Unnamed Queue"}</div>
-                                        {service.description && (
-                                            <div className="queue-service-desc">{service.description}</div>
-                                        )}
+                                <div key={service.id}>
+                                    <div className="queue-row" role="row">
+                                        <div className="queue-col queue-col-service">
+                                            <div className="queue-service-name">{service.name || "Unnamed Queue"}</div>
+                                            {service.description && (
+                                                <div className="queue-service-desc">{service.description}</div>
+                                            )}
+                                        </div>
+                                        <div className="queue-col queue-value"><img src={personIcon} alt="person" className="qm-person-icon"/> {people}</div>
+                                        <div className="queue-col queue-value">{wait} min</div>
+                                        <div className="queue-col queue-value">
+                                            <span className={`queue-chip queue-chip-priority-${priority.toLowerCase()}`}>
+                                                {priority}
+                                            </span>
+                                        </div>
+                                        <div className="queue-col queue-value">
+                                            <span className={`queue-chip queue-chip-status-${status.toLowerCase()}`}>
+                                                {status}
+                                            </span>
+                                        </div>
+                                        <div className="queue-col queue-col-action">
+                                            <button
+                                                type="button"
+                                                className="serve-button"
+                                                onClick={() => handleServeNext(service.id)}
+                                                disabled={people === 0}
+                                            >
+                                                Serve Next User
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="serve-button"
+                                                style={{ marginTop: '4px' }}
+                                                onClick={() => setExpandedService(isExpanded ? null : service.id)}
+                                                disabled={people === 0}
+                                            >
+                                                {isExpanded ? "Hide Queue" : "Manage Queue"}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="queue-col queue-value"><img src={personIcon} alt="person" className="qm-person-icon"/> {people}</div>
-                                    <div className="queue-col queue-value">{wait} min</div>
-                                    <div className="queue-col queue-value">
-                                        <span className={`queue-chip queue-chip-priority-${priority.toLowerCase()}`}>
-                                            {priority}
-                                        </span>
-                                    </div>
-                                    <div className="queue-col queue-value">
-                                        <span className={`queue-chip queue-chip-status-${status.toLowerCase()}`}>
-                                            {status}
-                                        </span>
-                                    </div>
-                                    <div className="queue-col queue-col-action">
-                                        <button
-                                            type="button"
-                                            className="serve-button"
-                                            onClick={() => handleServeNext(service.id)}
-                                            disabled={people === 0}
-                                        >
-                                            Serve Next User
-                                        </button>
-                                    </div>
+                                    {isExpanded && (
+                                        <div className="queue-list-container">
+                                            {users.map((user) => (
+                                                <QueueUserItem
+                                                    key={user.ticketId}
+                                                    user={user}
+                                                    serviceId={service.id}
+                                                    onMove={handleMove}
+                                                    onRemove={handleRemove}
+                                                    onOverridePriority={handleOverridePriority}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

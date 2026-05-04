@@ -43,6 +43,9 @@ beforeEach(() => {
   Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
   // getQueueList calls Queue.find() for statuses — default to empty list
   Queue.find.mockResolvedValue([]);
+  // reorderQueue (called by joinQueue) calls QueueEntry.find().sort() — default to empty queue
+  QueueEntry.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
+  QueueEntry.findByIdAndUpdate.mockResolvedValue({});
   // getWaitTime fetches history — default to empty (falls back to service duration)
   History.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
 });

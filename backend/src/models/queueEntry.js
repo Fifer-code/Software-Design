@@ -29,6 +29,15 @@ const queueEntrySchema = new mongoose.Schema({
     default: Date.now,
     required: true
   },
+  subCategory: {
+    type: String,
+    default: ''
+  },
+  priority: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'],
+    default: 'Low'
+  },
   status: {
     type: String,
     enum: ['waiting', 'served', 'canceled'],

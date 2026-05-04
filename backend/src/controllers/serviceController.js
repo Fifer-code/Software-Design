@@ -12,7 +12,8 @@ const getService = async (req, res) => {
             description: s.description,
             duration: s.duration,
             priority: s.priority,
-            category: s.category
+            category: s.category,
+            subcategories: s.subcategories || []
         }));
         res.json({ success: true, services: servicesArray });
     } catch (error) {
@@ -23,14 +24,14 @@ const getService = async (req, res) => {
 // creates a new service and saves it to the database
 const createService = async (req, res) => {
     try {
-        const { id, name, description, duration, priority, category } = req.body;
+        const { id, name, description, duration, priority, category, subcategories } = req.body;
 
         // checks if there is an id, name, or duration missing
         if (!id || !name || !duration) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const service = await Service.create({ serviceId: id, name, description, duration, priority, category, ticketCounter: 0 });
+        const service = await Service.create({ serviceId: id, name, description, duration, priority, category, subcategories: subcategories || [], ticketCounter: 0 });
 
         // create an open queue for this service (assignment requirement: Queue tracks status per service)
         await Queue.create({ serviceId: id, status: 'open' });
@@ -45,7 +46,7 @@ const createService = async (req, res) => {
 const updateService = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, duration, priority, category } = req.body;
+        const { name, description, duration, priority, category, subcategories } = req.body;
 
         // build update object with only the fields that were provided
         const updates = {};
@@ -54,6 +55,7 @@ const updateService = async (req, res) => {
         if (duration) updates.duration = duration;
         if (priority) updates.priority = priority;
         if (category) updates.category = category;
+        if (subcategories !== undefined) updates.subcategories = subcategories;
 
         const service = await Service.findOneAndUpdate(
             { serviceId: id },

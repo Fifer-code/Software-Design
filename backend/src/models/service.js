@@ -31,6 +31,18 @@ const serviceSchema =  new mongoose.Schema(
             type: String,
             enum: ['DMV', 'Banking', 'Student Advising']
         },
+        subcategories: [{
+            name: {
+                type: String,
+                required: true,
+                maxlength: [100, 'Subcategory name cannot exceed 100 characters']
+            },
+            priority: {
+                type: String,
+                enum: ['Low', 'Medium', 'High'],
+                default: 'Low'
+            }
+        }],
         ticketCounter:{
             type: Number,
             default: 0
