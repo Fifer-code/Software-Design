@@ -104,8 +104,7 @@ useEffect(() => {
       }
     );
 
-    const ticket = res.data;
-
+    const ticket = { ...res.data, serviceName: service.name };
 
     localStorage.setItem("currentTicket", JSON.stringify(ticket));
 
