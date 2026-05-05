@@ -221,7 +221,7 @@ function QueueManagement() {
                         {services.map((service) => {
                             const users = queueLists?.[service.id] || [];
                             const people = users.length;
-                            const wait = waitTimes?.[service.id] || 0;
+                            const wait = waitTimes?.[service.id]?.totalEstimatedWaitMinutes || 0;
                             const priority = service.priority || "Low";
                             const status = queueStatuses?.[service.id] || "open";
                             const isExpanded = expandedService === service.id;
