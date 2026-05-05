@@ -5,6 +5,10 @@ const queueEntrySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  serviceId: {
+    type: String,
+    required: true
+  },
   userId: {
     type: String,
     required: true

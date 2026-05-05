@@ -9,7 +9,7 @@ import { useNotifications } from '../../context/NotificationContext';
 
 function AdminDashboard() {
     // backend connection functions
-    const { waitTimes, queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
+    const { queueLists, queueStatuses, services, fetchQueueData } = useContext(QueueContext);
     const { addNotification } = useNotifications();
 
     const [selectedServiceId, setSelectedServiceId] = useState('');
@@ -18,7 +18,7 @@ function AdminDashboard() {
 
     useEffect(() => {
         fetchQueueData();
-    }, []);
+    }, [fetchQueueData]);
 
     const handlePauseUnpause = async () => {
         if (!selectedServiceId) return;

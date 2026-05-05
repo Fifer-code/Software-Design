@@ -33,8 +33,12 @@ const createService = async (req, res) => {
 
         const service = await Service.create({ serviceId: id, name, description, duration, priority, category, subcategories: subcategories || [], ticketCounter: 0 });
 
-        // create an open queue for this service (assignment requirement: Queue tracks status per service)
-        await Queue.create({ serviceId: id, status: 'open' });
+        // create an open queue for the main service category if it does not already exist
+        const queueId = category || id;
+        const existingQueue = await Queue.findOne({ serviceId: queueId });
+        if (!existingQueue) {
+            await Queue.create({ serviceId: queueId, status: 'open' });
+        }
 
         res.status(201).json({ success: true, message: "Service created", service });
     } catch (error) {
@@ -57,17 +61,25 @@ const updateService = async (req, res) => {
         if (category) updates.category = category;
         if (subcategories !== undefined) updates.subcategories = subcategories;
 
-        const service = await Service.findOneAndUpdate(
+        const updatedService = await Service.findOneAndUpdate(
             { serviceId: id },
             updates,
             { new: true }  // return the updated document
         );
 
-        if (!service) {
+        if (!updatedService) {
             return res.status(404).json({ success: false, message: "Service not found" });
         }
 
-        res.json({ success: true, message: "Service updated", service });
+        if (category && category !== updatedService.category) {
+            const queueId = category || id;
+            const existingQueue = await Queue.findOne({ serviceId: queueId });
+            if (!existingQueue) {
+                await Queue.create({ serviceId: queueId, status: 'open' });
+            }
+        }
+
+        res.json({ success: true, message: "Service updated", service: updatedService });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -80,8 +92,18 @@ const deleteService = async (req, res) => {
         if (!service) {
             return res.status(404).json({ success: false, message: "Service not found" });
         }
-        await Queue.deleteMany({ serviceId: id });
-        await QueueEntry.deleteMany({ queueId: id });
+        await QueueEntry.deleteMany({ serviceId: id });
+
+        if (service.category) {
+            const remainingServicesInCategory = await Service.countDocuments({ category: service.category });
+            if (remainingServicesInCategory === 0) {
+                await Queue.deleteMany({ serviceId: service.category });
+                await QueueEntry.deleteMany({ queueId: service.category });
+            }
+        } else {
+            await Queue.deleteMany({ serviceId: id });
+            await QueueEntry.deleteMany({ queueId: id });
+        }
         res.json({ success: true, message: "Service deleted" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

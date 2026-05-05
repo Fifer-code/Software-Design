@@ -5,57 +5,31 @@ import { getAuthHeaders } from "../../utils/auth";
 import { QueueContext } from "../../context/QueueContext";
 import { useNotifications } from "../../context/NotificationContext";
 
-// Service edit form (uses notifications internally)
-const SubcategoryEditor = ({ subcategories, onChange }) => {
-    const [newName, setNewName] = useState("");
-    const [newPriority, setNewPriority] = useState("Low");
+const ServiceOptions = {
+  DMV: ["License Renewal", "ID Registration", "Title Transfers", "Take Driver's Test"],
+  Banking: ["Cash Deposits / Withdrawals", "Open New Account", "Apply for a Loan", "Debit/Credit Card Replacement"],
+  "Student Advising": ["Course Planning", "Drop or Add Classes", "Financial Aid Counseling", "Transcript Requests"]
+};
 
-    const handleAdd = () => {
-        const trimmed = newName.trim();
-        if (!trimmed) return;
-        if (subcategories.find(sc => sc.name === trimmed)) return;
-        onChange([...subcategories, { name: trimmed, priority: newPriority }]);
-        setNewName("");
-        setNewPriority("Low");
-    };
-
-    const handleRemove = (name) => onChange(subcategories.filter(sc => sc.name !== name));
-
-    const handlePriorityChange = (name, priority) =>
-        onChange(subcategories.map(sc => sc.name === name ? { ...sc, priority } : sc));
-
-    return (
-        <div className="subcategory-editor">
-            <label>Subcategories:</label>
-            {subcategories.map(sc => (
-                <div key={sc.name} className="subcategory-row">
-                    <span className="subcategory-name">{sc.name}</span>
-                    <select value={sc.priority} onChange={(e) => handlePriorityChange(sc.name, e.target.value)}>
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
-                    </select>
-                    <button type="button" className="delete-btn" onClick={() => handleRemove(sc.name)}>✕</button>
-                </div>
-            ))}
-            <div className="subcategory-add-row">
-                <input
-                    type="text"
-                    placeholder="Subcategory name"
-                    value={newName}
-                    maxLength={100}
-                    onChange={(e) => setNewName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAdd())}
-                />
-                <select value={newPriority} onChange={(e) => setNewPriority(e.target.value)}>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                </select>
-                <button type="button" className="save-btn" onClick={handleAdd}>Add</button>
-            </div>
-        </div>
-    );
+const ServiceDescriptions = {
+    DMV: {
+        "License Renewal": "Renew your drivers license with a clerk",
+        "ID Registration": "Apply for or renew your state ID with a clerk",
+        "Title Transfers": "Transfer your vehicle title with a clerk",
+        "Take Driver's Test": "Take your written or road test with an examiner"
+    },
+    Banking: {
+        "Cash Deposits / Withdrawals": "Make cash deposits or withdrawals with a teller",
+        "Open New Account": "Open a new checking or savings account with a banker",
+        "Apply for a Loan": "Apply for a loan with a loan officer",
+        "Debit/Credit Card Replacement": "Replace your debit or credit card with a teller"
+    },
+    "Student Advising": {
+        "Course Planning": "Plan your upcoming semester courses with an advisor",
+        "Drop or Add Classes": "Drop or add classes this semester with an advisor",
+        "Financial Aid Counseling": "Review your financial aid options with a counselor",
+        "Transcript Requests": "Request your academic transcript with the registrar"
+    }
 };
 
 const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
@@ -68,11 +42,18 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
         category: initialData.category || "",
         status: status || "open"
     });
-    const [subcategories, setSubcategories] = useState(initialData.subcategories || []);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const { name, value } = e.target;
+    if (name === "category") {
+        setFormData({ ...formData, category: value, name: "", description: "" });
+    } else if (name === "name") {
+        const autoDescription = ServiceDescriptions[formData.category]?.[value] || "";
+        setFormData({ ...formData, name: value, description: autoDescription });
+    } else {
+        setFormData({ ...formData, [name]: value });
+    }
+};
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -82,8 +63,7 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                 headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify({
                     ...formData,
-                    duration: Number(formData.duration),
-                    subcategories
+                    duration: Number(formData.duration)
                 })
             });
             const data = await response.json();
@@ -126,13 +106,20 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                 <div className="edit-left">
                     <div className="form-group">
                         <label>Service Name: </label>
-                        <input
-                            type="text"
+                        <select
                             name="name"
-                            required maxLength="100"
+                            required
                             value={formData.name}
                             onChange={handleChange}
-                        />
+                            disabled={!formData.category}
+                        >
+                            <option value="" disabled hidden>
+                                {formData.category ? "Select Service" : "Choose Category First"}
+                            </option>
+                            {formData.category && ServiceOptions[formData.category].map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="form-group">
                         <label>Expected Duration: </label>
@@ -190,7 +177,6 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
                     </div>
                 </div>
             </form>
-            <SubcategoryEditor subcategories={subcategories} onChange={setSubcategories} />
         </div>
     );
 };
@@ -222,11 +208,18 @@ function ServiceManagement() {
         duration: '',
         priority: ''
     });
-    const [newServiceSubcategories, setNewServiceSubcategories] = useState([]);
 
     const handleNewServiceChange = (e) => {
-        setNewService({ ...newService, [e.target.name]: e.target.value });
-    };
+    const { name, value } = e.target;
+    if (name === "category") {
+        setNewService({ ...newService, category: value, name: "", description: "" });
+    } else if (name === "name") {
+        const autoDescription = ServiceDescriptions[newService.category]?.[value] || "";
+        setNewService({ ...newService, name: value, description: autoDescription });
+    } else {
+        setNewService({ ...newService, [name]: value });
+    }
+};
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -239,15 +232,13 @@ function ServiceManagement() {
                 body: JSON.stringify({
                     id: generatedId,
                     ...newService,
-                    duration: Number(newService.duration),
-                    subcategories: newServiceSubcategories
+                    duration: Number(newService.duration)
                 })
             });
 
             if (response.ok) {
                 addNotification("Service successfully created!", "success");
                 setNewService({ category: '', name: '', description: '', duration: '', priority: '' });
-                setNewServiceSubcategories([]);
                 fetchServices();
             } else {
                 const err = await response.json();
@@ -259,21 +250,39 @@ function ServiceManagement() {
     };
 
     const createCard = (
-        <div className="admin-card-1">
-            <form className="admin-create-form" onSubmit={handleCreate}>
-                <div className="form-group">
-                    <label>Service Category:</label>
-                    <select name="category" value={newService.category} onChange={handleNewServiceChange} required>
-                        <option value="" disabled hidden></option>
-                        <option value="DMV">DMV</option>
-                        <option value="Banking">Banking</option>
-                        <option value="Student Advising">Student Advising</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Queue Name:</label>
-                    <input type="text" name="name" value={newService.name} onChange={handleNewServiceChange} required maxLength="100" />
-                </div>
+    <div className="admin-card-1">
+        <form className="admin-create-form" onSubmit={handleCreate}>
+            <div className="form-group">
+                <label>Service Category:</label>
+                <select 
+                    name="category" 
+                    value={newService.category} 
+                    onChange={handleNewServiceChange} 
+                    required
+                >
+                    <option value="" disabled hidden>Select Category</option>
+                    {Object.keys(ServiceOptions).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="form-group">
+                <label>Service:</label>
+                <select 
+                    name="name" 
+                    value={newService.name} 
+                    onChange={handleNewServiceChange} 
+                    required 
+                    disabled={!newService.category}
+                >
+                    <option value="" disabled hidden>
+                        {newService.category ? "Select Service" : "Choose Category First"}
+                    </option>
+                    {newService.category && ServiceOptions[newService.category].map(option => (
+                        <option key={option} value={option}>{option}</option>
+                    ))}
+                </select>
+            </div>
                 <div className="form-group">
                     <label>Description:</label>
                     <textarea rows="5" name="description" value={newService.description} onChange={handleNewServiceChange} required></textarea>
@@ -291,7 +300,6 @@ function ServiceManagement() {
                         <option value="Low">Low</option>
                     </select>
                 </div>
-                <SubcategoryEditor subcategories={newServiceSubcategories} onChange={setNewServiceSubcategories} />
                 <button type="submit">Create New Service</button>
             </form>
         </div>
@@ -301,7 +309,7 @@ function ServiceManagement() {
         <div className="admin-card-2">
             <div className="service-table-shell">
                 <div className="service-table-header">
-                    <div className="service-col service-col-name">Queue Name</div>
+                    <div className="service-col service-col-name">Service</div>
                     <div className="service-col">Duration</div>
                     <div className="service-col">Category</div>
                     <div className="service-col">Priority</div>

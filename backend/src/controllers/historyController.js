@@ -9,7 +9,7 @@ const recordJoin = async (ticketId, name, serviceId) => {
         event: 'joined',
         message: `${name} (${ticketId}) joined the ${serviceId} queue.`
     });
-    console.log(`[HISTORY] ${entry.message}`);
+    console.log(`[HISTORY] ${entry?.message || `${name} (${ticketId}) joined the ${serviceId} queue.`}`);
     return entry;
 };
 
@@ -22,7 +22,7 @@ const recordServed = async (ticketId, name, serviceId) => {
         event: 'served',
         message: `${name} (${ticketId}) was served in the ${serviceId} queue.`
     });
-    console.log(`[HISTORY] ${entry.message}`);
+    console.log(`[HISTORY] ${entry?.message || `${name} (${ticketId}) was served in the ${serviceId} queue.`}`);
     return entry;
 };
 
@@ -35,13 +35,15 @@ const recordRemoved = async (ticketId, name, serviceId) => {
         event: 'removed',
         message: `${name} (${ticketId}) was removed from the ${serviceId} queue.`
     });
-    console.log(`[HISTORY] ${entry.message}`);
+    console.log(`[HISTORY] ${entry?.message || `${name} (${ticketId}) was removed from the ${serviceId} queue.`}`);
     return entry;
 };
 
-// GET /api/history — return full history log
+// GET /api/history — return history log, optional ?limit=N
 const getAllHistory = async (req, res) => {
-    const history = await History.find().sort({ timestamp: -1 });
+    const limit = parseInt(req.query.limit) || 0;
+    const query = History.find().sort({ timestamp: -1 });
+    const history = limit > 0 ? await query.limit(limit) : await query;
     res.json({ success: true, history });
 };
 

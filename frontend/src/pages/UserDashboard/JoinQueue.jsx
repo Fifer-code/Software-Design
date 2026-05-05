@@ -14,27 +14,46 @@ function JoinQueue() {
 
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [fullName, setFullName] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState({});
 
 
 useEffect(() => {
-  const fetchServices = async () => {
+  const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/services", {
-        headers: getAuthHeaders()
-      });
-      const arr = res.data?.services;
-      setServices(Array.isArray(arr) ? arr : []);
+      const [servicesRes, queuesRes, waitTimesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/services", { headers: getAuthHeaders() }),
+        axios.get("http://localhost:8080/api/queues", { headers: getAuthHeaders() }),
+        axios.get("http://localhost:8080/api/queues/wait-time", { headers: getAuthHeaders() })
+      ]);
+
+      const fetchedServices = servicesRes.data?.services || [];
+      const queues = queuesRes.data?.queues || {};
+      const waitTimes = waitTimesRes.data?.waitTimes || {};
+
+      const servicesWithWaitTimes = Array.isArray(fetchedServices) ? fetchedServices.map(service => {
+        
+        const currentQueueLength = queues[service.id]?.length || 0;
+        
+        const perPersonWait = waitTimes[service.id]?.estimatedPerPersonMinutes ?? service.duration ?? 0;
+        
+        const estimatedWaitTime = Math.max(0, currentQueueLength * perPersonWait);
+
+        return {
+          ...service,
+          waitTime: estimatedWaitTime
+        };
+      }) : [];
+
+      setServices(servicesWithWaitTimes);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch data for wait times:", err);
       setServices([]);
     }
   };
 
-  fetchServices();
+  fetchData();
 }, []);
 
   const validate = () => {
@@ -50,11 +69,6 @@ useEffect(() => {
 
     if (!selectedService) {
       newErrors.service = "Please select a service";
-    }
-
-    const service = services.find((s) => String(s.id) === selectedService);
-    if (service?.subcategories?.length > 0 && !selectedSubCategory) {
-      newErrors.subCategory = "Please select a subcategory";
     }
 
     if (reason.length > REASON_MAX) {
@@ -83,15 +97,13 @@ useEffect(() => {
       {
         name: fullName.trim(),
         serviceId: service.id,
-        subCategory: selectedSubCategory || '',
       },
       {
         headers: getAuthHeaders()
       }
     );
 
-    const ticket = res.data;
-
+    const ticket = { ...res.data, serviceName: service.name };
 
     localStorage.setItem("currentTicket", JSON.stringify(ticket));
 
@@ -110,6 +122,15 @@ useEffect(() => {
   }
 };
 
+
+const groupedServices = services.reduce((acc, service) => {
+    const category = service.category || "Other";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(service);
+    return acc;
+  }, {});
 
   return (
     <div className="page-container">
@@ -131,13 +152,13 @@ useEffect(() => {
                       <div className="join-service-desc">{service.description}</div>
                     )}
                   </div>
-                  <div className="join-col join-value">{service.waitTime ?? "N/A"} min</div>
+                  <div className="join-col join-value">{service.waitTime} min</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
+              
         <div className="join-right">
           <div className="card" style={{ marginTop: 0 }}>
             <h3>Queue Registration</h3>
@@ -162,51 +183,31 @@ useEffect(() => {
           </div>
 
           <div className="form-group-dashboard">
-            <label htmlFor="service">Select Service *</label>
+            <label htmlFor="service">Select Service</label>
             <select
               id="service"
               required
               value={selectedService}
               className={errors.service ? "input-error" : ""}
-              onChange={(e) => { setSelectedService(e.target.value); setSelectedSubCategory(""); }}
+              onChange={(e) => setSelectedService(e.target.value)}
             >
               <option value="">-- Choose a service --</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} (≈ {s.waitTime ?? "N/A"} min)
-                </option>
+              
+              {/* Map through the grouped services to create optgroups */}
+              {Object.keys(groupedServices).map((category) => (
+                <optgroup key={category} label={category}>
+                  {groupedServices[category].map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (≈ {s.waitTime ?? "N/A"} min)
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             {errors.service && (
               <span className="form-error">{errors.service}</span>
             )}
           </div>
-
-          {(() => {
-            const service = services.find((s) => String(s.id) === selectedService);
-            if (!service?.subcategories?.length) return null;
-            return (
-              <div className="form-group-dashboard">
-                <label htmlFor="subCategory">Select Reason *</label>
-                <select
-                  id="subCategory"
-                  value={selectedSubCategory}
-                  className={errors.subCategory ? "input-error" : ""}
-                  onChange={(e) => setSelectedSubCategory(e.target.value)}
-                >
-                  <option value="">-- Select a reason --</option>
-                  {service.subcategories.map((sc) => (
-                    <option key={sc.name} value={sc.name}>
-                      {sc.name} ({sc.priority} priority)
-                    </option>
-                  ))}
-                </select>
-                {errors.subCategory && (
-                  <span className="form-error">{errors.subCategory}</span>
-                )}
-              </div>
-            );
-          })()}
 
           <div className="form-group-dashboard">
             <label htmlFor="reason">Reason for Visit</label>

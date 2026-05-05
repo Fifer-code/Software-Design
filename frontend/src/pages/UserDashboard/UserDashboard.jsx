@@ -52,7 +52,7 @@ function UserDashboard() {
 
       <div className="card-grid">
         {/* CURRENT QUEUE */}
-        <div className="card">
+        <div className="card current-queue-card">
           <h3>Current Queue</h3>
 
           {ticket ? (
@@ -80,21 +80,8 @@ function UserDashboard() {
           )}
         </div>
 
-        {/* SERVICES */}
-        <div className="card">
-          <h3>Active Services</h3>
-
-          {services.length > 0 ? (
-            services.map((s) => (
-              <p key={s.id}>{s.name}</p>
-            ))
-          ) : (
-            <p>No services available.</p>
-          )}
-        </div>
-
         {/* NOTIFICATIONS */}
-        <div className="card">
+        <div className="card notifications-card">
           <h3>Notifications</h3>
 
           {notifications && notifications.length > 0 ? (
@@ -120,6 +107,29 @@ function UserDashboard() {
             </ul>
           ) : (
             <p>No new updates.</p>
+          )}
+        </div>
+
+        {/* SERVICES */}
+        <div className="card active-services-card">
+          <h3>Active Services</h3>
+
+          {services.length > 0 ? (
+            <div className="ud-service-rows-wrap">
+              {services.map((s) => (
+                <div key={s.id || s.serviceId || s.name} className="ud-service-row">
+                  <div className="ud-service-row-main">
+                    <p className="ud-service-row-name">{s.name}</p>
+                    <p className="ud-service-row-desc">{s.description || "No description available."}</p>
+                  </div>
+                  <div className="ud-service-row-meta">
+                    <span>{s.duration ? `${s.duration} min` : "--"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No services available.</p>
           )}
         </div>
       </div>

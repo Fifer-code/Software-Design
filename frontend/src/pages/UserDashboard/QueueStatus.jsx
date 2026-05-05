@@ -161,10 +161,7 @@ function QueueStatus() {
   }
 
 
-  const serviceIdLabel =
-    typeof ticket?.serviceId === "string"
-      ? ticket.serviceId.toUpperCase()
-      : "Unknown";
+  const serviceIdLabel = ticket?.serviceName || ticket?.serviceId || "Unknown";
 
   const estimatedWaitLabel =
     estimatedWait != null ? estimatedWait : "N/A";

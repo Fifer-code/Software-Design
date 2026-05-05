@@ -5,7 +5,7 @@ const { authenticateToken, authorizeRoles } = require('../middleware/authMiddlew
 const { getAllHistory, getHistoryByTicket, getHistoryByService, getReportData } = require('../controllers/historyController');
 
 // get full history log
-router.get('/', authenticateToken, authorizeRoles('admin'), getAllHistory);
+router.get('/', getAllHistory);
 
 // get aggregated report data
 router.get('/report', authenticateToken, authorizeRoles('admin'), getReportData);

@@ -4,7 +4,7 @@ const router = express.Router();
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // import all exports from queueController.js **MUST MATCH *
-const { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, updateQueueStatus, clearAllQueues, updateSubcategoryPriority, overrideUserPriority } = require('../controllers/queueController');
+const { getWaitTime, getQueueList, serveNextUser, moveUser, removeUser, joinQueue, updateQueueStatus, clearAllQueues } = require('../controllers/queueController');
 
 // respective calls for each function
 // get calculated wait time
@@ -30,11 +30,5 @@ router.patch('/:serviceId/status', authenticateToken, authorizeRoles('admin'), u
 
 // clear all waiting entries across all queues — end of day action
 router.delete('/reset', authenticateToken, authorizeRoles('admin'), clearAllQueues);
-
-// update a subcategory's priority and reorder the whole queue
-router.patch('/:serviceId/subcategory-priority', authenticateToken, authorizeRoles('admin'), updateSubcategoryPriority);
-
-// override a single user's priority and reorder
-router.patch('/:serviceId/:ticketId/priority', authenticateToken, authorizeRoles('admin'), overrideUserPriority);
 
 module.exports = router;

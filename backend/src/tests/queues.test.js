@@ -37,7 +37,7 @@ const adminToken = jwt.sign(
 beforeEach(() => {
   jest.clearAllMocks();
   // most tests need a valid service and open queue, set as default
-  Service.findOne.mockResolvedValue({ serviceId: "dmv", name: "DMV Queue 1", duration: 15 });
+  Service.findOne.mockResolvedValue({ serviceId: "dmv", name: "DMV Queue 1", duration: 15, priority: "Low" });
   // joinQueue calls findOneAndUpdate to increment ticketCounter
   Service.findOneAndUpdate.mockResolvedValue({ serviceId: "dmv", ticketCounter: 1 });
   Queue.findOne.mockResolvedValue({ serviceId: "dmv", status: "open", save: jest.fn().mockResolvedValue({}) });
@@ -92,7 +92,7 @@ describe("Queue API", () => {
     QueueEntry.create.mockResolvedValue({ ticketId: "D001", name: "TestUser", status: "waiting" });
     QueueEntry.find.mockReturnValue({
       sort: jest.fn().mockResolvedValue([
-        { queueId: "dmv", ticketId: "D001", name: "TestUser" }
+        { queueId: "dmv", ticketId: "D001", name: "TestUser", position: 1 }
       ])
     });
 
@@ -112,6 +112,7 @@ describe("Queue API", () => {
     expect(Array.isArray(queuesForService)).toBe(true);
     expect(queuesForService.length).toBeGreaterThan(0);
     expect(queuesForService[queuesForService.length - 1].name).toBe("TestUser");
+    expect(queuesForService[queuesForService.length - 1].position).toBe(1);
   });
 
   test("Leave queue", async () => {
