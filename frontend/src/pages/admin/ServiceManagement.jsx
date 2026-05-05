@@ -11,6 +11,27 @@ const ServiceOptions = {
   "Student Advising": ["Course Planning", "Drop or Add Classes", "Financial Aid Counseling", "Transcript Requests"]
 };
 
+const ServiceDescriptions = {
+    DMV: {
+        "License Renewal": "Renew your drivers license with a clerk",
+        "ID Registration": "Apply for or renew your state ID with a clerk",
+        "Title Transfers": "Transfer your vehicle title with a clerk",
+        "Take Driver's Test": "Take your written or road test with an examiner"
+    },
+    Banking: {
+        "Cash Deposits / Withdrawals": "Make cash deposits or withdrawals with a teller",
+        "Open New Account": "Open a new checking or savings account with a banker",
+        "Apply for a Loan": "Apply for a loan with a loan officer",
+        "Debit/Credit Card Replacement": "Replace your debit or credit card with a teller"
+    },
+    "Student Advising": {
+        "Course Planning": "Plan your upcoming semester courses with an advisor",
+        "Drop or Add Classes": "Drop or add classes this semester with an advisor",
+        "Financial Aid Counseling": "Review your financial aid options with a counselor",
+        "Transcript Requests": "Request your academic transcript with the registrar"
+    }
+};
+
 // Service edit form (uses notifications internally)
 const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onClose }) => {
     const { addNotification } = useNotifications();
@@ -26,7 +47,10 @@ const ServiceEditForm = ({ serviceId, title, status, initialData, onRefresh, onC
     const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "category") {
-        setFormData({ ...formData, category: value, name: "" });
+        setFormData({ ...formData, category: value, name: "", description: "" });
+    } else if (name === "name") {
+        const autoDescription = ServiceDescriptions[formData.category]?.[value] || "";
+        setFormData({ ...formData, name: value, description: autoDescription });
     } else {
         setFormData({ ...formData, [name]: value });
     }
@@ -189,7 +213,10 @@ function ServiceManagement() {
     const handleNewServiceChange = (e) => {
     const { name, value } = e.target;
     if (name === "category") {
-        setNewService({ ...newService, category: value, name: "" });
+        setNewService({ ...newService, category: value, name: "", description: "" });
+    } else if (name === "name") {
+        const autoDescription = ServiceDescriptions[newService.category]?.[value] || "";
+        setNewService({ ...newService, name: value, description: autoDescription });
     } else {
         setNewService({ ...newService, [name]: value });
     }
