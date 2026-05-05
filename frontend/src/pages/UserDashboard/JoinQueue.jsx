@@ -14,6 +14,7 @@ function JoinQueue() {
 
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [fullName, setFullName] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState({});
@@ -71,6 +72,11 @@ useEffect(() => {
       newErrors.service = "Please select a service";
     }
 
+    const service = services.find((s) => String(s.id) === selectedService);
+    if (service?.subcategories?.length > 0 && !selectedSubCategory) {
+      newErrors.subCategory = "Please select a subcategory";
+    }
+
     if (reason.length > REASON_MAX) {
       newErrors.reason = `Reason cannot exceed ${REASON_MAX} characters`;
     }
@@ -97,6 +103,7 @@ useEffect(() => {
       {
         name: fullName.trim(),
         serviceId: service.id,
+        subCategory: selectedSubCategory || '',
       },
       {
         headers: getAuthHeaders()
@@ -189,7 +196,7 @@ const groupedServices = services.reduce((acc, service) => {
               required
               value={selectedService}
               className={errors.service ? "input-error" : ""}
-              onChange={(e) => setSelectedService(e.target.value)}
+              onChange={(e) => { setSelectedService(e.target.value); setSelectedSubCategory(""); }}
             >
               <option value="">-- Choose a service --</option>
               
@@ -208,6 +215,32 @@ const groupedServices = services.reduce((acc, service) => {
               <span className="form-error">{errors.service}</span>
             )}
           </div>
+
+          {(() => {
+            const service = services.find((s) => String(s.id) === selectedService);
+            if (!service?.subcategories?.length) return null;
+            return (
+              <div className="form-group-dashboard">
+                <label htmlFor="subCategory">Select Reason *</label>
+                <select
+                  id="subCategory"
+                  value={selectedSubCategory}
+                  className={errors.subCategory ? "input-error" : ""}
+                  onChange={(e) => setSelectedSubCategory(e.target.value)}
+                >
+                  <option value="">-- Select a reason --</option>
+                  {service.subcategories.map((sc) => (
+                    <option key={sc.name} value={sc.name}>
+                      {sc.name} ({sc.priority} priority)
+                    </option>
+                  ))}
+                </select>
+                {errors.subCategory && (
+                  <span className="form-error">{errors.subCategory}</span>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="form-group-dashboard">
             <label htmlFor="reason">Reason for Visit</label>

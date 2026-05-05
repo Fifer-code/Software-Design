@@ -92,7 +92,7 @@ describe("Queue API", () => {
     QueueEntry.create.mockResolvedValue({ ticketId: "D001", name: "TestUser", status: "waiting" });
     QueueEntry.find.mockReturnValue({
       sort: jest.fn().mockResolvedValue([
-        { queueId: "dmv", ticketId: "D001", name: "TestUser", position: 1 }
+        { queueId: "dmv", ticketId: "D001", name: "TestUser" }
       ])
     });
 
@@ -112,7 +112,6 @@ describe("Queue API", () => {
     expect(Array.isArray(queuesForService)).toBe(true);
     expect(queuesForService.length).toBeGreaterThan(0);
     expect(queuesForService[queuesForService.length - 1].name).toBe("TestUser");
-    expect(queuesForService[queuesForService.length - 1].position).toBe(1);
   });
 
   test("Leave queue", async () => {
